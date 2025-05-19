@@ -12,3 +12,9 @@ sources:
       - name: bjcjp
       - name: brvprtimejob
       - name: jccm
+      - name: APTL
+      - name: APTD
+      - name: ARTH
+      - name: PMOI
+      - name: JCOI
+      

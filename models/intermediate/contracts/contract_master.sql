@@ -1,9 +1,7 @@
--- will need to pull in job master to get all contract <> Job joins (~2)
-
 select 
-    JCCO, 
-    CONTRACT,
-    CONTRACT AS JOB,
+    trim(JCCO) as JCCO, 
+    trim(CONTRACT) as CONTRACT,
+    TRIM(CONTRACT) AS JOB,
     DESCRIPTION,
     DEPARTMENT, 
     CONTRACTSTATUS AS CONTRACT_STATUS,
