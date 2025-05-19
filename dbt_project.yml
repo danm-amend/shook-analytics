@@ -2,7 +2,7 @@
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'my_new_project'
+name: 'shook_analytics'
 version: '1.0.0'
 config-version: 2
 
@@ -36,7 +36,22 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 
 models:
-  my_new_project:
-    # Applies to all files under models/example/
-    example:
-      +materialized: table
+  shook_analytics:
+    shook_analytics:
+      profitability:
+        +materialized: table
+        +database: shook_analytics
+        +schema: profitability
+      ad_hoc:
+        +materialized: table
+        +database: shook_analytics
+        +schema: ad_hoc
+    intermediate:
+      contracts:
+        +materialized: view
+        +database: intermediate
+        +schema: contracts
+      finances:
+        +materialized: view
+        +database: intermediate
+        +schema: finances

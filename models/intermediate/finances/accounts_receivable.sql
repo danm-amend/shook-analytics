@@ -1,0 +1,21 @@
+select 
+    ARCo,
+    Mth,
+    ARTrans,
+    ARTransType,
+    CUSTGroup,
+    Customer,
+    CustRef,
+    JCCo,
+    Contract,
+    Invoice,
+    TransDate,
+    AppliedMth,
+    AppliedTrans,
+    Invoiced,
+    Paid,
+    Retainage,
+    DiscTaken,
+    AmountDue,
+    PayFullDate
+from {{ source('shookdw', 'ARTH') }}

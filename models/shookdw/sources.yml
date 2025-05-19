@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: shookdw
+    database: shookdw
+    schema: viewpoint
+    tables:
+      - name: bjccd
+      - name: bjcci
+      - name: bjcct
+      - name: cjcdm
+      - name: bjcjp
+      - name: brvprtimejob
+      - name: jccm
+      - name: APTL
+      - name: APTD
+      - name: ARTH
+      - name: PMOI
+      - name: JCOI
+      

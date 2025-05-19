@@ -1,0 +1,16 @@
+select 
+    trim("JCCo") as JCCO,
+    trim("Job") as Job,
+    "CostTrans" as cost_trans,
+    "ActualDate" as actual_date,
+    "JCTransType" as trans_type,
+    "PhaseGroup" as phase_group,
+    "Phase" as phase,
+    "CostType" as cost_type,
+    case 
+    when "JCTransType" in ('OE', 'CO') then "EstCost"
+    WHEN "JCTransType" = 'PF' then "ProjCost" 
+    else 0
+    end as estimated_cost
+from {{ source('shookdw', 'bjccd') }}
+where "JCTransType" in ('OE', 'CO', 'PF')
