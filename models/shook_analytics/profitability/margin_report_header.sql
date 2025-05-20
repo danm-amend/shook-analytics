@@ -126,4 +126,4 @@ with contract_master as (
     committed_cost as cc 
     using(jcco, job)
 )
-select * from header where Contract = '115036.'
+select * from header
