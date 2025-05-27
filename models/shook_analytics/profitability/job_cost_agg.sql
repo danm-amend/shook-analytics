@@ -3,10 +3,18 @@ WITH
       SELECT 
         Jcco
         ,Job
+        ,COALESCE(cm.START_DATE, cm.START_MONTH, ac.min_month) as min_month
+        ,COALESCE(cm.ACTUAL_CLOSE_DATE, cm.MONTH_CLOSED, ac.max_month) as max_month
+      from {{ ref('contract_master') }} as cm
+      left join 
+      (
+        select Jcco, Job
         ,MIN(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS min_month
         ,MAX(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS max_month
-      FROM {{ ref('actual_cost') }}
-      GROUP BY jcco, job
+        FROM {{ ref('actual_cost') }}
+        GROUP BY jcco, job
+      ) as ac 
+      using(jcco, job)
     ),
     current_job_bounds AS (
         SELECT *
