@@ -3,6 +3,7 @@ with committed_cost as (
         trim("JCCo") as JCCO,
         trim("Job") as Job,
         "CostTrans" as cost_trans,
+        "Mth" as mth,
         "ActualDate" as actual_date,
         "JCTransType" as trans_type,
         "PhaseGroup" as phase_group,
