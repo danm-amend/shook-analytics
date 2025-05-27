@@ -1,7 +1,8 @@
-select 
+with contract_master as (
+    select 
     trim(JCCO) as JCCO, 
-    trim(CONTRACT) as CONTRACT,
-    TRIM(CONTRACT) AS JOB,
+    trim(Contract) as CONTRACT,
+    TRIM(Contract) AS JOB,
     DESCRIPTION,
     DEPARTMENT, 
     CONTRACTSTATUS AS CONTRACT_STATUS,
@@ -19,3 +20,7 @@ select
     RECEIVEDAMT AS RECEIVED_AMT,
     CURRENTRETAINAMT AS CURRENT_RETAIN_AMT
 from {{ source('shookdw', 'jccm') }}
+) 
+
+select *
+from contract_master
