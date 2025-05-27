@@ -1,87 +1,137 @@
 WITH 
     job_bounds AS (
       SELECT 
-        "Job"
-        ,MIN(DATE_TRUNC('MONTH', CAST("Mth" AS DATE))) AS "min_month"
-        ,MAX(DATE_TRUNC('MONTH', CAST("Mth" AS DATE))) AS "max_month"
-      FROM {{ source('shookdw', 'bjccd') }}
-      GROUP BY "Job"
+        Jcco
+        ,Job
+        ,MIN(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS min_month
+        ,MAX(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS max_month
+      FROM {{ ref('actual_cost') }}
+      GROUP BY jcco, job
     ),
     current_job_bounds AS (
         SELECT *
         FROM job_bounds
-        WHERE "min_month" >= DATE_TRUNC('MONTH', DATEADD(YEAR, -8, CURRENT_DATE))
+        WHERE min_month >= DATE_TRUNC('MONTH', DATEADD(YEAR, -8, CURRENT_DATE))
     ), 
     month_numbers AS (
       SELECT 
-        ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1 AS "month_offset"
+        ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1 AS month_offset
       FROM TABLE(GENERATOR(ROWCOUNT => 200))  -- enough months to cover any job span
     ),
     job_months AS (
-      SELECT 
-        cpb."Job"
-        ,DATEADD(MONTH, mn."month_offset", cpb."min_month") AS "cost_month"
+      SELECT
+        JCCo 
+        ,cpb.Job
+        ,DATEADD(MONTH, mn.month_offset, cpb.min_month) AS cost_month
       FROM current_job_bounds cpb
           JOIN month_numbers mn
-            ON mn."month_offset" <= DATEDIFF(MONTH, cpb."min_month", cpb."max_month")
+            ON mn.month_offset <= DATEDIFF(MONTH, cpb.min_month, cpb.max_month)
     ),
     job_phases AS (
-      SELECT DISTINCT "Job","CostType","PhaseGroup","Phase"
-      FROM {{ source('shookdw', 'bjccd') }}
+      SELECT DISTINCT JCCO, Job, Cost_Type, Phase_Group, Phase
+      FROM {{ ref('actual_cost') }}
     ),
     job_cost_months AS (
       SELECT 
-        jp."Job"
-        ,jp."CostType"
-        ,jp."PhaseGroup"
-        ,jp."Phase"
-        ,jm."cost_month"
+        distinct 
+        jp.JCCo
+        ,jp.Job
+        ,jp.Cost_Type
+        ,jp.Phase_Group
+        ,jp.Phase
+        ,jm.cost_month as month_date
       FROM job_phases jp
           JOIN job_months jm
-            ON jp."Job" = jm."Job"
-    ),
-    job_cost_agg AS (
+            ON jp.JCCO = jm.JCCO and jp.Job = jm.Job
+    ), 
+    estimates_agg AS (
         SELECT
             --"PostedDate"
-            "Job"
-            ,"CostType"
-            ,"PhaseGroup"
-            ,"Phase"
-            ,CAST("Mth" AS DATE) AS "MonthDate"
-            ,SUM(CASE WHEN "JCTransType" = 'OE' THEN "EstCost" ELSE 0 END) AS "OriginalEst"
-            ,SUM(CASE WHEN "JCTransType" IN ('OE', 'CO') THEN "EstCost" ELSE 0 END) AS "CurrentEst"
-            ,SUM(CASE WHEN "JCTransType" = 'PF' THEN "ProjCost" ELSE 0 END) AS "Projected"
-            --,SUM("ForecastCost") AS "ForecastCost"
-            ,SUM("ActualCost") AS "ActualCost"
-            ,SUM("TotalCmtdCost") AS "CommittedCost"
+            JCCO
+            ,Job
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
+            ,CAST(Mth AS DATE) AS Month_Date
+            ,SUM(CASE WHEN trans_type = 'OE' THEN estimated_cost ELSE 0 END) AS original_estimate
+            ,SUM(CASE WHEN trans_type in ('OE', 'CO') THEN estimated_cost ELSE 0 END) AS current_estimate
+            ,SUM(CASE WHEN trans_type = 'PF' THEN estimated_cost ELSE 0 END) AS projected_estimate
         FROM 
-            {{ source('shookdw', 'bjccd') }}
+            {{ ref('cost_estimates') }}
+
         GROUP BY
-            "Job"
-            ,"CostType"
-            ,"PhaseGroup"
-            ,"Phase"
-            ,CAST("Mth" AS DATE)
+            JCCO
+            ,Job
+            ,cost_type
+            ,phase_group
+            , Phase
+            ,CAST(Mth AS DATE)
+    ), 
+    actual_agg as (
+        SELECT
+            JCCO
+            ,Job
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
+            ,CAST(Mth AS DATE) AS Month_Date
+            , sum(actual_cost) as actual_cost
+        FROM 
+            {{ ref('actual_cost') }}
+
+        GROUP BY
+            JCCO
+            ,Job
+            ,cost_type
+            ,phase_group
+            , Phase
+            ,CAST(Mth AS DATE)
+    ), 
+    committed_agg as (
+        SELECT
+            JCCO
+            ,Job
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
+            ,CAST(Mth AS DATE) AS Month_Date
+            , sum(committed_cost) as committed_cost
+        FROM 
+            {{ ref('committed_cost') }}
+
+        GROUP BY
+            JCCO
+            ,Job
+            ,cost_type
+            ,phase_group
+            , Phase
+            ,CAST(Mth AS DATE)
     ),
     jc_months_filled AS (
         SELECT 
-            jcm."Job"
-            ,jcm."CostType"
-            ,jcm."PhaseGroup"
-            ,jcm."Phase"
-            ,jcm."cost_month"
-            ,COALESCE(jca."OriginalEst", 0) AS "OriginalEst"
-            ,COALESCE(jca."CurrentEst", 0) "CurrentEst"
-            ,COALESCE(jca."Projected", 0) AS "Projected"
-            ,COALESCE(jca."ActualCost", 0) AS "ActualCost"
-            ,COALESCE(jca."CommittedCost", 0) AS "CommittedCost"
+            jcm.jcco
+            ,jcm.Job
+            ,jcm.Cost_Type
+            ,jcm.Phase_Group
+            ,jcm.Phase
+            ,jcm.month_date
+            ,COALESCE(ea.original_estimate, 0) AS "OriginalEst"
+            ,COALESCE(ea.current_estimate, 0) "CurrentEst"
+            ,COALESCE(ea.projected_estimate, 0) AS "Projected"
+            ,COALESCE(aa.actual_cost, 0) AS "ActualCost"
+            ,COALESCE(ca.committed_cost, 0) AS "CommittedCost"
         FROM job_cost_months jcm
-          LEFT JOIN job_cost_agg jca
-            ON jcm."Job" = jca."Job"
-            AND jcm."CostType" = jca."CostType"
-            AND jcm."PhaseGroup" = jca."PhaseGroup"
-            AND jcm."Phase" = jca."Phase"
-            AND jcm."cost_month" = jca."MonthDate"
+          LEFT JOIN estimates_agg ea
+          using(jcco, job, cost_type, phase_group, phase, month_date)
+          LEFT JOIN actual_agg aa 
+          using(jcco, job, cost_type, phase_group, phase, month_date)
+          left join committed_agg ca 
+          using(jcco, job, cost_type, phase_group, phase, month_date)
+            -- ON jcm."Job" = jca."Job"
+            -- AND jcm."CostType" = jca."CostType"
+            -- AND jcm."PhaseGroup" = jca."PhaseGroup"
+            -- AND jcm."Phase" = jca."Phase"
+            -- AND jcm."cost_month" = jca."MonthDate"
     ),
     /*
     jc_cleanup AS (
@@ -103,57 +153,60 @@ WITH
     */
     job_cost_detail AS (
         SELECT
-            jmf."Job"
-            ,jmf."cost_month"
-            ,jmf."CostType" AS "CostTypeNumber"
+            jmf.jcco
+            ,jmf.Job
+            ,jmf.month_date as "cost_month"
+            ,jmf.Cost_Type AS "CostTypeNumber"
             ,ct."Description" AS "CostTypeName"
-            ,jmf."PhaseGroup"
-            ,jmf."Phase"
-            ,SUBSTR(jmf."Phase", 1,2) AS "Division"
+            ,jmf.Phase_Group
+            ,jmf.Phase
+            ,SUBSTR(jmf.Phase, 1,2) AS "Division"
             ,jp."Description"
             
             ,jmf."OriginalEst"
             ,SUM(jmf."OriginalEst") OVER (
-                PARTITION BY jmf."Job", jmf."CostType", jmf."PhaseGroup", jmf."Phase"
-                ORDER BY jmf."cost_month"
+                PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.Phase
+                ORDER BY jmf.month_date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeOriginalEst"
             
             ,jmf."CurrentEst"
             ,SUM(jmf."CurrentEst") OVER (
-                PARTITION BY jmf."Job", jmf."CostType", jmf."PhaseGroup", jmf."Phase"
-                ORDER BY jmf."cost_month"
+                PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.phase
+                ORDER BY jmf.month_date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeCurrentEst"
             
             ,jmf."Projected"
             ,SUM(jmf."Projected") OVER (
-                PARTITION BY jmf."Job", jmf."CostType", jmf."PhaseGroup", jmf."Phase"
-                ORDER BY jmf."cost_month"
+                PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.phase
+                ORDER BY jmf.month_date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeProjected"
             
             ,jmf."ActualCost"
             ,SUM(jmf."ActualCost") OVER (
-                PARTITION BY jmf."Job", jmf."CostType", jmf."PhaseGroup", jmf."Phase"
-                ORDER BY jmf."cost_month"
+                PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.Phase
+                ORDER BY jmf.month_date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeActualCost"
             
             ,jmf."CommittedCost"
             ,SUM(jmf."CommittedCost") OVER (
-                PARTITION BY jmf."Job", jmf."CostType", jmf."PhaseGroup", jmf."Phase"
-                ORDER BY jmf."cost_month"
+                PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.Phase
+                ORDER BY jmf.month_date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeCommittedCost"
             
         FROM jc_months_filled AS jmf
             LEFT JOIN {{ source('shookdw', 'bjcjp') }} AS jp
-                ON jmf."Job" = jp."Job"
-                AND jmf."Phase" = jp."Phase"
+                ON jmf.jcco = jp."JCCo"
+                and jmf.Job = jp."Job"
+                and jmf.phase_group = jp."PhaseGroup"
+                AND jmf.Phase = jp."Phase"
             LEFT JOIN {{ source('shookdw', 'bjcct') }} AS ct
-                ON jmf."PhaseGroup" = ct."PhaseGroup"
-                AND jmf."CostType" = ct."CostType"
+                ON jmf.Phase_Group = ct."PhaseGroup"
+                AND jmf.Cost_Type = ct."CostType"
             /*INNER JOIN jc_cleanup AS jcc
                 ON jmf."Job" = jcc."Job"
                 AND jmf."CostType" = jcc."CostType"
