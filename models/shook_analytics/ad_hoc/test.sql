@@ -1,0 +1,1 @@
+select '{{generate_schema_name('TEST')}}'
