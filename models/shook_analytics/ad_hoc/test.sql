@@ -1,1 +1,1 @@
-select '{{generate_schema_name('TEST')}}'
+select '{{generate_schema_name('TEST')}}' as environment
