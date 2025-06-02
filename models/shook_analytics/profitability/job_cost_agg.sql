@@ -37,7 +37,7 @@ WITH
     ),
     job_phases AS (
       SELECT DISTINCT JCCO, Job, Cost_Type, Phase_Group, Phase
-      FROM {{ ref('actual_cost') }}
+      FROM {{ ref('phases') }}
     ),
     job_cost_months AS (
       SELECT 

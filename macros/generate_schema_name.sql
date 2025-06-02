@@ -3,7 +3,7 @@
     {% if env == 'prod'%}
         {{custom_schema_name}}
     {% else %}
-        {{ default_schema }}_{{ custom_schema_name  | trim}}
+        {{ target.schema }}_{{ custom_schema_name  | trim}}
     {% endif %}
 {% endmacro %}
 
