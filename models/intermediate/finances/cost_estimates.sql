@@ -14,4 +14,6 @@ select
     else 0
     end as estimated_cost
 from {{ source('shookdw', 'bjccd') }}
-where "JCTransType" in ('OE', 'CO', 'PF')
+where trim("JCTransType") in ('OE', 'CO', 'PF')
+-- and trim("Job") = '123009.'
+-- and Phase like '80%'
