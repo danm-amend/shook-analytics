@@ -8,7 +8,7 @@ sources:
       - name: bjccd
       - name: bjcci
       - name: bjcct
-      - name: cjcdm
+      - name: bjcdm
       - name: bjcjp
       - name: brvprtimejob
       - name: jccm
@@ -17,4 +17,7 @@ sources:
       - name: ARTH
       - name: PMOI
       - name: JCOI
+      - name: GLAC
+      - name: GLBC
+      - name: GLBD
       
