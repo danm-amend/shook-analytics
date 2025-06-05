@@ -19,7 +19,7 @@ with budget as (
     left join 
     {{ source('shookdw', 'GLBC') }} as bc
     using(GLCo, BUDGETCODE)
-    where Mth >= '2015-01-01'
+    where Mth >= '2017-01-01'
 ), division_add as (
     select 
         bd.*,
@@ -54,4 +54,3 @@ select
     mth,
     budget_amount
 from forecast_details
-
