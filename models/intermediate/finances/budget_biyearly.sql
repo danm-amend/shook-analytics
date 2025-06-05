@@ -19,7 +19,7 @@ with budget as (
     left join 
     {{ source('shookdw', 'GLBC') }} as bc
     using(GLCo, BUDGETCODE)
-    where Mth >= '2020-01-01'
+    where Mth >= '2015-01-01'
 ), division_add as (
     select 
         bd.*,
@@ -29,6 +29,13 @@ with budget as (
     left join 
     {{ source('shookdw', 'bjcdm') }} as dm
     on trim(bd.account_division) = trim(dm.department)
+), forecast_details as (
+    select 
+        *,
+        split_part(budget_code, ' ', 1) as budget_year,
+        REGEXP_SUBSTR(budget_code, 'FC([0-9.]+)', 1, 1, 'e', 1) AS fc_number
+    from 
+    division_add 
 )
 
 select 
@@ -42,6 +49,9 @@ select
     account_type,
     budget_code, 
     budget_description,
+    budget_year,
+    fc_number,
     mth,
     budget_amount
-from division_add
+from forecast_details
+
