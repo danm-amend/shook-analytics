@@ -1,0 +1,13 @@
+# version: 2
+
+models: 
+  - name: contract_master
+    description: "This table contains cleaned and condensed data from the Viewpoint contract master module."
+    columns:
+      - name: JCCo
+        description: "The Job Cost Company associated with the Job"
+    tests:
+      - dbt_utils.unique_conbination_of_columns:
+        combination_of_columns:
+          - JCCo
+          - Contract
