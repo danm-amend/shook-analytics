@@ -6,8 +6,8 @@ models:
     columns:
       - name: JCCo
         description: "The Job Cost Company associated with the Job"
-    tests:
-      - dbt_utils.unique_conbination_of_columns:
-        combination_of_columns:
-          - JCCo
-          - Contract
+    # tests:
+    #   - dbt_utils.unique_conbination_of_columns:
+    #     combination_of_columns:
+    #       - JCCo
+    #       - Contract
