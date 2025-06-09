@@ -54,3 +54,4 @@ select
     mth,
     budget_amount
 from forecast_details
+where budget_year >= 2017
