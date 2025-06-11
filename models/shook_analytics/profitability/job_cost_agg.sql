@@ -18,13 +18,23 @@ WITH
     -- ),
     job_bounds AS (
         select 
-            JCCo
+            JCCO
             , Job
             ,MIN(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS min_month
             ,MAX(DATE_TRUNC('MONTH', CAST(Mth AS DATE))) AS max_month
-        FROM {{ ref('actual_cost') }}
+        FROM 
+            (
+                SELECT JCCO, Job, Mth
+                FROM {{ ref('actual_cost') }}
+                UNION
+                SELECT JCCO, Job, Mth
+                FROM {{ ref('cost_estimates') }}
+                UNION
+                SELECT JCCO, Job, Mth
+                FROM {{ ref('committed_cost') }}
+            )
         GROUP BY 
-            JCCo
+            JCCO
             , Job
     ),
     current_job_bounds AS (
@@ -39,7 +49,7 @@ WITH
     ),
     job_months AS (
       SELECT
-        JCCo 
+        JCCO 
         ,cpb.Job
         ,DATEADD(MONTH, mn.month_offset, cpb.min_month) AS cost_month
       FROM current_job_bounds cpb
@@ -53,16 +63,17 @@ WITH
     job_cost_months AS (
       SELECT 
         distinct 
-        jp.JCCo
+        jp.JCCO
         ,jp.Job
         ,jp.Cost_Type
         ,jp.Phase_Group
         ,jp.Phase
-        ,jm.cost_month as month_date
+        ,jm.cost_month as Month_Date
       FROM job_phases jp
           JOIN job_months jm
             ON jp.JCCO = jm.JCCO and jp.Job = jm.Job
-    ), 
+    ), --select * from job_cost_months where job = '123040.' order by phase, cost_type, month_date
+    --select count(*) from job_cost_months where job = '123040.'
     estimates_agg AS (
         SELECT
             --"PostedDate"
@@ -81,11 +92,11 @@ WITH
         GROUP BY
             JCCO
             ,Job
-            ,cost_type
-            ,phase_group
-            , Phase
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
             ,CAST(Mth AS DATE)
-    ), 
+    ),-- select sum(projected_estimate) from estimates_agg where job = '123040.'
     actual_agg as (
         SELECT
             JCCO
@@ -101,9 +112,9 @@ WITH
         GROUP BY
             JCCO
             ,Job
-            ,cost_type
-            ,phase_group
-            , Phase
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
             ,CAST(Mth AS DATE)
     ), 
     committed_agg as (
@@ -121,19 +132,19 @@ WITH
         GROUP BY
             JCCO
             ,Job
-            ,cost_type
-            ,phase_group
-            , Phase
+            ,Cost_Type
+            ,Phase_Group
+            ,Phase
             ,CAST(Mth AS DATE)
     ),
     jc_months_filled AS (
         SELECT 
-            jcm.jcco
+            jcm.JCCO
             ,jcm.Job
             ,jcm.Cost_Type
             ,jcm.Phase_Group
             ,jcm.Phase
-            ,jcm.month_date
+            ,jcm.Month_Date
             ,COALESCE(ea.original_estimate, 0) AS "OriginalEst"
             ,COALESCE(ea.current_estimate, 0) "CurrentEst"
             ,COALESCE(ea.projected_estimate, 0) AS "Projected"
@@ -141,11 +152,11 @@ WITH
             ,COALESCE(ca.committed_cost, 0) AS "CommittedCost"
         FROM job_cost_months jcm
           LEFT JOIN estimates_agg ea
-          using(jcco, job, cost_type, phase_group, phase, month_date)
+          using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
           LEFT JOIN actual_agg aa 
-          using(jcco, job, cost_type, phase_group, phase, month_date)
-          left join committed_agg ca 
-          using(jcco, job, cost_type, phase_group, phase, month_date)
+          using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
+          LEFT JOIN committed_agg ca 
+          using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
             -- ON jcm."Job" = jca."Job"
             -- AND jcm."CostType" = jca."CostType"
             -- AND jcm."PhaseGroup" = jca."PhaseGroup"
@@ -172,9 +183,9 @@ WITH
     */
     job_cost_detail AS (
         SELECT
-            jmf.jcco
+            jmf.JCCO
             ,jmf.Job
-            ,jmf.month_date as "cost_month"
+            ,jmf.Month_Date as "cost_month"
             ,jmf.Cost_Type AS "CostTypeNumber"
             ,ct."Description" AS "CostTypeName"
             ,jmf.Phase_Group
@@ -185,21 +196,21 @@ WITH
             ,jmf."OriginalEst"
             ,SUM(jmf."OriginalEst") OVER (
                 PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.Phase
-                ORDER BY jmf.month_date
+                ORDER BY jmf.Month_Date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeOriginalEst"
             
             ,jmf."CurrentEst"
             ,SUM(jmf."CurrentEst") OVER (
                 PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.phase
-                ORDER BY jmf.month_date
+                ORDER BY jmf.Month_Date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeCurrentEst"
             
             ,jmf."Projected"
             ,SUM(jmf."Projected") OVER (
                 PARTITION BY jmf.Job, jmf.cost_type, jmf.phase_group, jmf.phase
-                ORDER BY jmf.month_date
+                ORDER BY jmf.Month_Date
                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
             ) AS "CumulativeProjected"
             
