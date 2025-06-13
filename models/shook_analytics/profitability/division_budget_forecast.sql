@@ -4,11 +4,12 @@ with budget as (
     from 
         {{ ref('budget_biyearly') }}
     where 
-        account_division in (
-            select department
-            from {{ source('shookdw', 'bjcdm') }}
-            where lower(Description) like '%region%' -- make this into a table  
-        ) 
+    lower(department_description) like '%region%'
+        -- account_division in (
+        --     select department
+        --     from {{ source('shookdw', 'bjcdm') }}
+        --     where lower(Description) like '%region%' -- make this into a table  
+        -- ) 
 
 ), fc_name as (
 
@@ -122,8 +123,8 @@ with budget as (
 ), rev_margin as (
     select 
         mg.*,
-        round(abs(rv.budget_amount), 2) as revenue,
-        round(abs(mg.budget_amount), 2) as margin
+        round((rv.budget_amount), 2) as revenue,
+        round((mg.budget_amount), 2) as margin
     from
         account_rev as rv 
     join 
