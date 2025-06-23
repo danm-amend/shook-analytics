@@ -29,18 +29,44 @@
 ), add_division as (
     select 
         aa.*
-        , dm.Description as department_description 
+        , coalesce(dm.Description, glpi.Description) as division_description 
     from add_accounts aa 
     left join 
     {{ source('shookdw', 'bjcdm') }} as dm 
-    on trim(aa.account_division) = trim(dm.department) 
+    on trim(aa.account_division) = trim(dm.department) and trim(aa.gl_co) = trim(dm.GlCo)
+    left join 
+    {{ source('shookdw', 'GLPI') }} as glpi 
+    on trim(aa.account_division) = trim(glpi.instance) and aa.gl_co = glpi.GlCo 
+    and glpi.PartNo = 2
+), add_natural_account_desc as (
+    select 
+        ad.*,
+        glpi.Description as natural_account_desc
+    from 
+        add_division as ad 
+    left join 
+        {{ source('shookdw', 'GLPI') }} as glpi
+    on ad.natural_account = trim(glpi.instance) and ad.gl_co = trim(glpi.GlCo)
+    where glpi.PartNo = 1
+), add_department as (
+    select 
+        na.*,
+        glpi.Description as department_description
+    from 
+        add_natural_account_desc as na 
+    left join 
+        {{ source('shookdw', 'GLPI') }} as glpi 
+    on na.gl_co = trim(glpi.GLCo) and na.account_department = trim(glpi.instance)
+    where glpi.PartNo = 3
 )
 
 select 
     gl_co,
     gl_account, 
     natural_account,
+    natural_account_desc,
     account_division,
+    division_description,
     account_department,
     department_description,
     account_description,
@@ -51,5 +77,4 @@ select
     source,
     mth,
     net_amt as net_amount
-from add_division
-
+from add_department
