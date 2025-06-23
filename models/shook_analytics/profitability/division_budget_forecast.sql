@@ -4,7 +4,12 @@ with budget as (
     from 
         {{ ref('budget_biyearly') }}
     where 
-    lower(department_description) like '%region%'
+    account_division in (
+    '0400', '0410', '0420', '0430', '0440',
+    '0600', '0610', '0620', '0630', '0640',
+    '0800', '0810', '0820', '0830', '0840',
+    '1200', '1210', '1220', '1230', '1240'
+)
         -- account_division in (
         --     select department
         --     from {{ source('shookdw', 'bjcdm') }}
