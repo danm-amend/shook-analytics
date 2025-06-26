@@ -6,8 +6,8 @@ with actual_cost as (
         "Mth" as Mth, 
         "ActualDate" as actual_date,
         "JCTransType" as trans_type,
-        "PhaseGroup" as phase_group,
-        "Phase" as phase,
+        trim("PhaseGroup") as phase_group,
+        trim("Phase") as phase,
         "CostType" as cost_type,
         "ActualCost" as actual_cost
     from 

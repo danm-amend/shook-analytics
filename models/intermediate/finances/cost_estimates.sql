@@ -6,7 +6,7 @@ select
     "ActualDate" as actual_date,
     "JCTransType" as trans_type,
     "PhaseGroup" as phase_group,
-    "Phase" as phase,
+    trim("Phase") as phase,
     "CostType" as cost_type,
     case 
     when "JCTransType" in ('OE', 'CO') then "EstCost"
