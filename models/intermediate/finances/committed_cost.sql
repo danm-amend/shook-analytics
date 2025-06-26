@@ -7,7 +7,7 @@ with committed_cost as (
         "ActualDate" as actual_date,
         "JCTransType" as trans_type,
         "PhaseGroup" as phase_group,
-        "Phase" as phase,
+        trim("Phase") as phase,
         "CostType" as cost_type,
         "TotalCmtdUnits" as committed_units,
         "TotalCmtdCost" as committed_cost,

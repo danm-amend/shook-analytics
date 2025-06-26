@@ -153,7 +153,7 @@ WITH
         FROM job_cost_months jcm
           LEFT JOIN estimates_agg ea
           using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
-          LEFT JOIN actual_agg aa 
+          left JOIN actual_agg aa 
           using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
           LEFT JOIN committed_agg ca 
           using(JCCO, Job, Cost_Type, Phase_Group, Phase, Month_Date)
@@ -244,4 +244,5 @@ WITH
                 AND jmf."Phase" = jcc."Phase"*/
     )
 SELECT *
-FROM job_cost_detail
+FROM 
+job_cost_detail
