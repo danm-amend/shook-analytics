@@ -105,7 +105,8 @@ WITH
                 WHEN glacct like '5%' then 'direct_construction_cost'
                 WHEN glacct like '6%' or glacct like '7%' then 'indirect_construction_cost'
                 WHEN glacct like '8%' and glacct not like '89%' and glacct not like '88200%' and glacct not like '88300%' and glacct not like '88400%'  then 'admin_expenses'
-                --WHEN natural_account_number >= 11000 and natural_account_number <= 11199 and gl_acct not like '11150%' and glacct not like '11170%' then 'cash'
+                -- WHEN natural_account_number >= 11000 and natural_account_number <= 11199 and glacct not like '11150%' and glacct not like '11170%' then 'cash'
+                WHEN natural_account_number between 11000 and 11199 and natural_account_number not in (11150, 11170) and glco not in ('132', '134') then 'cash'
                 ELSE 'other'
             END AS pl_line_item
             ,CASE
@@ -141,7 +142,9 @@ WITH
 --     and
 --     region = 'Midwest'
 -- GROUP BY pl_line_item
-SELECT *
+
+-- SELECT pl_line_item, sum(netamt)
+select *
 FROM add_pl_context
 
     
