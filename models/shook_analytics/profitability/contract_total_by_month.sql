@@ -24,8 +24,6 @@ with contracts as (
 )
 
 select
--- * 
-sum(contract_amt) 
+* 
 from contract_to_change_order
-where contract = '124016.' 
 
