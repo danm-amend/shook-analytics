@@ -7,7 +7,7 @@ with change_orders as (
     a.Description,
     a.Status,
     a.ApprovedDate,
-    a.PendingAmount,
+    -- a.PendingAmount,
     a.ApprovedAmt,
     trim(a.Contract) as Contract,
     a.ContractItem,
