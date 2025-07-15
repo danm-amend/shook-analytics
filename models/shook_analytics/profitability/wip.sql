@@ -133,6 +133,7 @@ WITH
             *,
             cumulative_revenue - LAG(cumulative_revenue) OVER (PARTITION BY jcco, job ORDER BY mth) AS this_month_revenue
             ,cumulative_margin_dollars - LAG(cumulative_margin_dollars) OVER (PARTITION BY jcco, job ORDER BY mth) AS this_month_margin
+            ,MAX(mth) OVER (PARTITION BY jcco, job) AS max_month
         FROM 
             wip_calcs_3
     )
@@ -140,6 +141,12 @@ SELECT
     *
 FROM 
     wip_calcs_4
+WHERE
+    job LIKE '1%'
+    AND
+    LEN(job) >= 7
+    AND
+    max_month >= DATEADD(month, -6, GETDATE())
 ORDER BY
     jcco
     ,job
