@@ -1,0 +1,50 @@
+with incident_notification as (
+    select 
+        "link" as link,
+        "report" as report,
+        "report number" as report_number,
+        cast("date" as timestamp) as datetime,
+        "updated" as updated,
+        "updated_time" as update_time,
+        "version" as version,
+        "observer" as observer,
+        "observer-emp-num" as observer_emp_num,
+        "duration" as duration,
+        "latitude" as latitude,
+        "longitude" as longitude,
+        "temperature" as temperature,
+        "weather" as weather ,
+        "5ocmu4jnubr7i3fp" as description_1,
+        "enpzygmdlvama0uo" as description_2,
+        "f02c4goxxfk2crkv" as incident_details,
+        "hhoa45b9lwo3l2pp" as region,
+        "e0z5d7933ts0h1w8" as operating_unit_cen,
+        "zc5q0t7y0dq1ocyc" as operating_unit_gla,
+        "g8wixsb27bl8rjp2" as operating_unit_mat,
+        "bf3ycvu03gl9o8pu" as operating_unit_mwe,
+        "sw7q9icydgabk73p" as project,
+        "3nmr0xeq7vfwu8fp" as incident_type,
+        "7dtuy1o3o11pcv81" as description_3,
+        "uak0o36la7wduw2o" as description_4,
+        "wjbpaagjaomc77e9" as description_5,
+        "9tn1dvlkdku2twh7" as description_6,
+        "g8qp7bi7vkkqrztc" as describe_other,
+        to_timestamp(trim("zg69dpnrgww804oa"), 'MM/DD/YYYY HH12:MI AM') as datetime_of_incident,
+        "y9zznhfhzhmiq9f3" as employee_involved,
+        "6ja2s8nwgfaypoxy" as job_title,
+        "kpwkc3l6f3t2brag" as employee_supervisor,
+        "50if9do23x72f5i9" as contractor_involved,
+        "cpdi0i0tvfx65x94" as who_initially_reported_incident,
+        "kplf0ydahwucaavw" as incident_location,
+        "4bcd91hmb5p0yydr" as briefly_describe_what_happened,
+        "l0ekhz55wtpsklgx" as what_first_aid_was_provided,
+        "62tjzrd0ng49v6nw" as images_documents,
+        "parentrepnum" as parent_rep_num,
+        "parentlink" as parent_link,
+        "surrogate" as surrogate
+    from 
+    {{ source('kpa', 'incident_notification') }}
+    where "link" != 'Link'
+)
+
+select * from incident_notification

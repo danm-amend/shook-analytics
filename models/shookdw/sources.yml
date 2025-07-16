@@ -22,4 +22,10 @@ sources:
       - name: GLBD
       - name: GLAS
       - name: GLPI
+  - name: kpa
+    database: shookdw
+    schema: kpa
+    tables:
+      - name: incident_notification
+      - name: osha_recordable_incidents
       

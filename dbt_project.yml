@@ -37,6 +37,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   shook_data_warehouse:
+    staging:
+      kpa:
+        +materialized: view
+        +database: staging
+        +schema: kpa
     shook_analytics:
       profitability:
         +materialized: table
@@ -55,3 +60,7 @@ models:
         +materialized: view
         +database: intermediate
         +schema: finances
+      safety:
+        +materialized: view
+        +database: intermediate
+        +schema: safety
