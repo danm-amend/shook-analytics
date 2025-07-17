@@ -128,6 +128,15 @@ WITH
                 WHEN account_division in ('0420','0620','0820','1220') then 'Education'
             END AS market
         FROM add_context_to_gl
+    ), use_indirect_cost as (
+        select 
+            *,
+            iff(
+                pl_line_item = 'indirect_construction_cost' and account_division in ('0000', '3000', '0400', '0600', '0800', '1200'),
+                1,
+                0
+            ) as use_indirect_cost
+        from add_pl_context
     )
 -- SELECT 
 --     pl_line_item, sum(netamt)
@@ -145,6 +154,4 @@ WITH
 
 -- SELECT pl_line_item, sum(netamt)
 select *
-FROM add_pl_context
-
-    
+FROM use_indirect_cost
