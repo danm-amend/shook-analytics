@@ -28,4 +28,10 @@ sources:
     tables:
       - name: incident_notification
       - name: osha_recordable_incidents
+  - name: sharepoint
+    database: shookdw
+    schema: sharepoint
+    tables:
+      - name: new_sales_data_amend
+      
       
