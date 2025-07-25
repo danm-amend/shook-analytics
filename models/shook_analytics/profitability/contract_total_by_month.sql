@@ -21,9 +21,18 @@ with contracts as (
     select 
         * 
     from change_orders 
+), add_first_of_month as (
+    select 
+        *, 
+        date_trunc('MONTH', to_date(change_date)) as change_month
+    from contract_to_change_order
 )
 
 select
-* 
-from contract_to_change_order
+    JCCO,
+    contract,
+    change_date,
+    change_month,
+    contract_amt
+from add_first_of_month
 
