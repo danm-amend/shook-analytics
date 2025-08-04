@@ -29,6 +29,7 @@ with budget as (
     left join 
     {{ source('shookdw', 'bjcdm') }} as dm
     on trim(bd.account_division) = trim(dm.department)
+    and trim(bd.gl_co) = trim(dm.JCCo)
 ), forecast_details as (
     select 
         *,
@@ -56,3 +57,5 @@ select
 from forecast_details
 where budget_year >= 2017
 -- and lower(department_description) like '%region%'
+-- and to_date(Mth) = '2025-05-01'
+-- AND trim(GL_account) = '78510.0000.000'
