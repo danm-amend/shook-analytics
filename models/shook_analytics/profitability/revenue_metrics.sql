@@ -1,101 +1,102 @@
 with gl_actuals as (
     select 
-        *
+        mth,
+        -1 * sum(iff(pl_line_item = 'construction_revenue' and region is not null, netamt, 0)) as revenue,
+        sum(iff(pl_line_item = 'direct_construction_cost' and region is not null, netamt, 0)) as direct_cost,
+        sum(iff(pl_line_item = 'indirect_construction_cost' and use_indirect_cost = 1, netamt, 0)) as indirect_cost
     from 
         {{ ref('gl_actuals') }}
+    where include_company = 1
+    and year(mth) >= 2023
+    group by mth
 ), gl_budget as (
     select 
-        *
+        mth,
+        budget_type,
+        budget_name,
+        fc_number,
+        mth_year,
+        -1 * sum(iff(pl_line_item = 'construction_revenue' and region is not null, budget_amount, 0)) as revenue,
+        sum(iff(pl_line_item = 'direct_construction_cost' and region is not null, budget_amount, 0)) as direct_cost,
+        sum(iff(pl_line_item = 'indirect_construction_cost' and use_indirect_cost = 1, budget_amount, 0)) as indirect_cost
     from 
         {{ ref('gl_budget') }}
+    where include_company = 1
+    and mth_year >= 2023
+    group by mth, budget_type, budget_name, fc_number, mth_year
 ), two_years_prior as (
     select 
         mth, 
-        to_varchar(year(dateadd(year, -2, current_date))) || ' Revenue' as rev_type,
-        region, 
-        market,
-        sum(netamt) as revenue
+        to_varchar(year(dateadd(year, -2, current_date))) || ' Metrics' as rev_type,
+        -- region, 
+        -- market,
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_actuals 
     where year(mth) = year(dateadd(year, -2, current_date))
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
-    group by mth, region, market
 ), one_years_prior as (
     select 
         mth, 
-        to_varchar(year(dateadd(year, -1, current_date))) || ' Revenue' as rev_type,
-        region, 
-        market,
-        sum(netamt) as revenue
+        to_varchar(year(dateadd(year, -1, current_date))) || ' Metrics' as rev_type,
+        -- region, 
+        -- market,
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_actuals 
     where year(mth) = year(dateadd(year, -1, current_date))
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
-    group by mth, region, market
 ), current_ytd as (
     select 
         mth, 
         to_varchar(year(current_date)) || ' YTD' as rev_type,
-        region, 
-        market,
-        sum(netamt) as revenue
+        -- region, 
+        -- market,
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_actuals 
-    where year(mth) = year(current_date)
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
-    group by mth, region, market
-), current_plan as (
+    where year(mth) = year( current_date)
+)
+, current_plan as (
     select 
         mth,
         to_varchar(year(current_date)) || ' Plan' as rev_type,
-        region,
-        market,
-        sum(budget_amount) as revenue
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_budget
     where mth_year = year(current_date) and budget_type = 'Plan'
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
-    group by mth, region, market
-), next_year_plan as (
+    qualify fc_number = max(fc_number) over ()
+)
+, next_year_plan as (
     select 
         mth,
         to_varchar(year(dateadd(year, 1, current_date))) || ' Plan' as rev_type,
-        region,
-        market,
-        sum(budget_amount) as revenue
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_budget
     where mth_year = year(dateadd(year, 1, current_date)) and budget_type = 'Plan'
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
-    group by mth, region, market
-)
-, current_FC as (
+    qualify fc_number = max(fc_number) over ()
+), current_FC as (
     select 
         mth,
         budget_name as rev_type,
-        region,
-        market,
-        budget_amount
+        revenue,
+        direct_cost,
+        indirect_cost,
+        revenue - direct_cost - indirect_cost as margin
     from gl_budget
     where mth_year = year(current_date) and budget_type = 'FC'
-    and include_company = 1 and region is not null
-    and pl_line_item = 'construction_revenue'
     qualify fc_number = max(fc_number) over ()
-    -- group by mth, region, market
-), current_fc_grouped as (
-    select
-        mth,
-        rev_type,
-        region,
-        market,
-        sum(budget_amount) as revenue
-    from current_FC 
-    group by 
-        mth,
-        rev_type,
-        region,
-        market
-), union_metrics as (
+)
+, union_metrics as (
     select * from two_years_prior
     union all 
     select * from one_years_prior
@@ -106,11 +107,8 @@ with gl_actuals as (
     union all 
     select * from next_year_plan
     union all 
-    select * from current_fc_grouped
+    select * from current_FC
 )
 
--- select rev_type, sum(revenue)
--- from union_metrics
--- group by rev_type
-
 select * from union_metrics
+

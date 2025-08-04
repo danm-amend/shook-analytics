@@ -121,7 +121,7 @@ add_pl_context AS (
                 and account_division in ('0000', '3000', '0400', '0600', '0800', '1200')
                 and budget_year >= 2023 THEN 1
                 WHEN pl_line_item = 'indirect_construction_cost' 
-                and budget_year <= 2022 THEN 1 
+                and budget_year <= 2022 THEN 1
                 ELSE 0
             END as use_indirect_cost
         from add_pl_context
