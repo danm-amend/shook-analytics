@@ -1,4 +1,5 @@
 WITH
+    -- job_cost_agg query sets up all possible months within a job
     costs_history as (
         SELECT 
             "JCCO" AS jcco
