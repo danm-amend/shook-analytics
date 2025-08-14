@@ -33,5 +33,6 @@ sources:
     schema: sharepoint
     tables:
       - name: new_sales_data_amend
+      - name: rolling_forecast
       
       
