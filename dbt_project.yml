@@ -44,11 +44,11 @@ models:
         +schema: kpa
     shook_analytics:
       profitability:
-        +materialized: table
+        +materialized: view
         +database: shook_analytics
         +schema: profitability
       ad_hoc:
-        +materialized: table
+        +materialized: view
         +database: shook_analytics
         +schema: ad_hoc
     intermediate:
