@@ -95,6 +95,17 @@ with gl_actuals as (
     from gl_budget
     where mth_year = year(current_date) and budget_type = 'FC'
     qualify fc_number = max(fc_number) over ()
+), rolling_fc as (
+    select
+        DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,
+        forecast_type as rev_type,
+        round(sum(revenue), 2) as revenue,
+        null as direct_cost,
+        null as indirect_cost,
+        round(sum(margin), 2) as margin
+    from 
+        {{ ref('current_rolling_forecast') }}
+    group by forecast_type
 )
 , union_metrics as (
     select * from two_years_prior
@@ -108,6 +119,8 @@ with gl_actuals as (
     select * from next_year_plan
     union all 
     select * from current_FC
+    union all 
+    select * from rolling_fc
 )
 
 select * from union_metrics
