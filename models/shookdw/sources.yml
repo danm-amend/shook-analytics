@@ -34,5 +34,8 @@ sources:
     tables:
       - name: new_sales_data_amend
       - name: rolling_forecast
+      - name: new_sales_data_may25
+      - name: new_sales_data_jun25
+      - name: new_sales_data_jul25
       
       
