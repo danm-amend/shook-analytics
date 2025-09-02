@@ -37,5 +37,11 @@ sources:
       - name: new_sales_data_may25
       - name: new_sales_data_jun25
       - name: new_sales_data_jul25
+  - name: metadata
+    database: shookdw
+    schema: metadata
+    tables: 
+      - name: new_sales_file_control
+      - name: rolling_forecast_file_control
       
       
