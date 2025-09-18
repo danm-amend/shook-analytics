@@ -43,5 +43,13 @@ sources:
     tables: 
       - name: new_sales_file_control
       - name: rolling_forecast_file_control
+  - name: P6
+    database: shookdw
+    schema: P6
+    tables: 
+      - name: ACTVCODE
+      - name: ACTVCODE
+      - name: PROJECT
+      - name: CALENDAR
       
       
