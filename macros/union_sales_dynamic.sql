@@ -4,7 +4,14 @@
     {% set sql_parts = [] %}
     
     {% for t in table_names %}
-        {% do sql_parts.append("select *, '" ~ t ~ "' as source_table from " ~ db_name ~ "." ~ schema_name ~ "." ~ t) %}
+        {% do sql_parts.append("""
+            select 
+                \"Month\", 
+                \"Region\", 
+                \"Market Channel\", 
+                \"Title\", 
+                \"Plan Sales\", 
+                \"Actual Sales\", '""" ~ t ~ "' as source_table from " ~ db_name ~ "." ~ schema_name ~ "." ~ t) %}
     {% endfor %}
     
     {{ return(sql_parts | join(" union all ")) }}
