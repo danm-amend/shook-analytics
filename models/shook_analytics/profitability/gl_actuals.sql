@@ -181,9 +181,4 @@ WITH
 --     region = 'Midwest'
 -- GROUP BY pl_line_item
 
--- SELECT pl_line_item, sum(netamt)
-select admin_expense_category, count(*)
-FROM admin_expense_category
-where pl_line_item = 'admin_expenses' 
--- and admin_expense_category is null
-group by admin_expense_category
+select * from admin_expense_category
