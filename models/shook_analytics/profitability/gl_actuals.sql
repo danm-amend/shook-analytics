@@ -140,6 +140,32 @@ WITH
                 ELSE 0
             END as use_indirect_cost
         from add_pl_context
+    ), admin_expense_category as (
+        select 
+            *,
+            CASE
+                WHEN pl_line_item = 'admin_expenses' THEN 
+                    CASE
+                        WHEN account_division = '0000' and account_department in ('309', '009') then 'Accounting'
+                        WHEN account_division in ('0400', '0600', '0800', '1200') and account_department in ('300', '010') then 'Project Support'
+                        WHEN account_division = '0000' and account_department in ('414', '014') then 'Business Development'
+                        WHEN account_division in ('0400', '0600', '0800', '1200') and account_department in ('004') then 'Facilities'
+                        WHEN account_division = '0000' and account_department in ('012', '312') then 'HR'
+                        WHEN account_division in ('0000', '0400', '0600', '0800', '1200') and account_department in ('302', '002') then 'Field Ops'
+                        WHEN account_division = '0000' and account_department in ('407', '007') then 'Project Solutions'
+                        WHEN account_division = '0000' and account_department in ('316', '016') then 'Risk Management'
+                        WHEN account_division in ('0000', '0400', '0600', '0800', '1200') and account_department in ('311', '011') then 'Safety'
+                        WHEN account_division in ('0000', '0400', '0600', '0800', '1200') and account_department in ('008', '108', '308', '408', '508') then 'Technology'
+                        WHEN account_division = '0000' and account_department in ('000', '300') then 'C-Suite'
+                        WHEN account_division = '1200' and account_department in ('000', '100', '106', '400', '500') then 'Midwest'
+                        WHEN account_division = '0800' and account_department in ('000', '100', '106', '400', '500') then 'Mid-Atlantic'
+                        WHEN account_division = '0600' and account_department in ('000', '100', '106', '400', '500') then 'Central'
+                        WHEN account_division = '0400' and account_department in ('000', '100', '106', '400', '500') then 'Great Lakes'
+                        ELSE NULL 
+                    END
+                ELSE NULL
+            END as admin_expense_category
+        from use_indirect_cost
     )
 -- SELECT 
 --     pl_line_item, sum(netamt)
@@ -155,6 +181,4 @@ WITH
 --     region = 'Midwest'
 -- GROUP BY pl_line_item
 
--- SELECT pl_line_item, sum(netamt)
-select *
-FROM use_indirect_cost
+select * from admin_expense_category
