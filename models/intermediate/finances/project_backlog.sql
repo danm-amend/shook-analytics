@@ -9,7 +9,8 @@ with wip_union as (
     "Contracts Contract Description" as job_description,
     "region" as region,
     file_month_year, 
-    "Backlog in 000's Revenue"revenue_backlog
+    "Backlog in 000's Revenue" as revenue_backlog,
+    "Year Revenue" as ytd_revenue
     from wip_union
 )
 
