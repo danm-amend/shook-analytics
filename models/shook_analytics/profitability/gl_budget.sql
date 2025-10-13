@@ -125,7 +125,7 @@ add_pl_context AS (
                 ELSE 0
             END as use_indirect_cost
         from add_pl_context
-    ), final_cleanup AS (
+), final_cleanup AS (
         SELECT
             gl_co,
             gl_account,
@@ -140,7 +140,7 @@ add_pl_context AS (
             budget_description,
             budget_year,
             fc_number,
-            cast(budget_amount as float) as budget_amount
+            cast(budget_amount as float) as budget_amount,
             budget_name,
             mth_year,
             budget_type,
