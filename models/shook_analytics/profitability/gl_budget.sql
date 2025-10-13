@@ -125,7 +125,37 @@ add_pl_context AS (
                 ELSE 0
             END as use_indirect_cost
         from add_pl_context
-    )
+    ), final_cleanup AS (
+        SELECT
+            gl_co,
+            gl_account,
+            cast(mth as date) as mth,
+            natural_account,
+            account_division,
+            account_department,
+            department_description,
+            account_description,
+            account_type,
+            budget_code,
+            budget_description,
+            budget_year,
+            fc_number,
+            cast(budget_amount as float) as budget_amount
+            budget_name,
+            mth_year,
+            budget_type,
+            account_division_number,
+            pl_line_item,
+            include_company,
+            use_indirect_cost,
+            region,
+            market,
+            IFNULL(region, 'Other') AS region_clean,
+            IFNULL(market, 'Other') AS market_clean,
+            CONCAT(IFNULL(region, 'Other'), ' - ', IFNULL(market, 'Other')) AS region_market_clean
+        FROM
+            use_indirect_cost
+)
 -- SELECT pl_line_item, budget_name, sum(budget_amount)
 -- FROM add_pl_context
 -- WHERE 
@@ -137,4 +167,4 @@ add_pl_context AS (
 -- GROUP BY pl_line_item, budget_name
 -- ORDER BY budget_name, pl_line_item
 SELECT *
-FROM use_indirect_cost
+FROM final_cleanup

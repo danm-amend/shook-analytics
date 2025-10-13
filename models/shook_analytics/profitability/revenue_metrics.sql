@@ -27,7 +27,8 @@ with gl_actuals as (
 ), two_years_prior as (
     select 
         mth, 
-        to_varchar(year(dateadd(year, -2, current_date))) || ' Metrics' as rev_type,
+        --to_varchar(year(dateadd(year, -2, current_date))) || ' Metrics' as rev_type,
+        to_varchar(year(dateadd(year, -2, current_date))) as rev_type,
         -- region, 
         -- market,
         revenue,
@@ -39,7 +40,8 @@ with gl_actuals as (
 ), one_years_prior as (
     select 
         mth, 
-        to_varchar(year(dateadd(year, -1, current_date))) || ' Metrics' as rev_type,
+        --to_varchar(year(dateadd(year, -1, current_date))) || ' Metrics' as rev_type,
+        to_varchar(year(dateadd(year, -1, current_date))) as rev_type,
         -- region, 
         -- market,
         revenue,
@@ -98,7 +100,8 @@ with gl_actuals as (
 ), rolling_fc as (
     select
         DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,
-        forecast_type as rev_type,
+        --forecast_type as rev_type,
+        replace(forecast_type, ' Rolling Forecast', ' RF') as rev_type,
         round(sum(revenue), 2) as revenue,
         null as direct_cost,
         null as indirect_cost,
