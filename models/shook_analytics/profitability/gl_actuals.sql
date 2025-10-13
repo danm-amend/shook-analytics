@@ -166,6 +166,33 @@ WITH
                 ELSE NULL
             END as admin_expense_category
         from use_indirect_cost
+    ), final_cleanup AS (
+        SELECT
+            glco,
+            glacct,
+            cast(mth as date) as mth,
+            cast(netamt as float) as netamt,
+            natural_account,
+            account_division,
+            account_department,
+            account_description,
+            account_type,
+            natural_account_desc,
+            division_description,
+            department_description,
+            account_division_number,
+            natural_account_number,
+            pl_line_item,
+            include_company,
+            region,
+            market,
+            use_indirect_cost,
+            admin_expense_category,
+            IFNULL(region, 'Other') AS region_clean,
+            IFNULL(market, 'Other') AS market_clean,
+            CONCAT(IFNULL(region, 'Other'), ' - ', IFNULL(market, 'Other')) AS region_market_clean
+        FROM
+            admin_expense_category
     )
 -- SELECT 
 --     pl_line_item, sum(netamt)
@@ -181,4 +208,4 @@ WITH
 --     region = 'Midwest'
 -- GROUP BY pl_line_item
 
-select * from admin_expense_category
+select * from final_cleanup
