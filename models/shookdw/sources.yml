@@ -51,5 +51,7 @@ sources:
       - name: ACTVCODE
       - name: PROJECT
       - name: CALENDAR
+      - name: TASK
+      - name: P6_JOB_HEADER
       
       

@@ -64,3 +64,7 @@ models:
         +materialized: view
         +database: intermediate
         +schema: safety
+      schedule:
+        +materialized: view
+        +database: intermediate
+        +schema: schedule
