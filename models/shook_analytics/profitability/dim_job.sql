@@ -127,5 +127,6 @@ with contract_master as (
     committed_cost as cc 
     using(jcco, job)
 )
-select distinct * 
+select distinct *
 from header
+where start_date >= dateadd(year, -10, getdate())
