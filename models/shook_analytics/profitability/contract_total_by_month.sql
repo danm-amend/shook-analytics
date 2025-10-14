@@ -31,8 +31,8 @@ with contracts as (
 select
     JCCO,
     contract,
-    change_date,
-    change_month,
-    contract_amt
+    to_date(change_date) as change_date,
+    to_date(change_month) as change_month,
+    cast(contract_amt as float) as contract_amt
 from add_first_of_month
 

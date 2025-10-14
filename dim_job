@@ -63,10 +63,11 @@ with contract_master as (
         cm.contract,
         cm.job, 
         cm.Description,
+        concat(cm.job, ' - ', cm.Description) as JobNumberName,
         cm.department,
         cm.contract_status,
-        cm.start_date, 
-        coalesce(cm.ACTUAL_CLOSE_DATE, cm.MONTH_CLOSED) as close_date,
+        to_date(cm.start_date) as start_date, 
+        to_date(coalesce(cm.ACTUAL_CLOSE_DATE, cm.MONTH_CLOSED)) as close_date,
         cm.cust_group, 
         cm.customer, 
         cm.pay_terms,
@@ -81,24 +82,24 @@ with contract_master as (
         cm.orig_contract_amt - oe.orig_estimate as orig_gross_margin,
         cm.contract_amt - ce.curr_estimate as curr_gross_margin,
         cm.contract_amt - pe.proj_estimate as proj_gross_margin,
-        round(DIV0((cm.orig_contract_amt - oe.orig_estimate), cm.orig_contract_amt) * 100, 2)  as orig_gross_margin_pct,
-        round(DIV0((cm.contract_amt - ce.curr_estimate), cm.contract_amt) * 100, 2)  as curr_gross_margin_pct,
-        round(DIV0((cm.contract_amt - pe.proj_estimate), cm.contract_amt) * 100, 2)  as proj_gross_margin_pct,
-        round(DIV0(ctd.cost_to_date, ce.curr_estimate) * cm.orig_contract_amt, 2) as earned_revenue,
+        DIV0((cm.orig_contract_amt - oe.orig_estimate), cm.orig_contract_amt)  as orig_gross_margin_pct,
+        DIV0((cm.contract_amt - ce.curr_estimate), cm.contract_amt)  as curr_gross_margin_pct,
+        DIV0((cm.contract_amt - pe.proj_estimate), cm.contract_amt)  as proj_gross_margin_pct,
+        DIV0(ctd.cost_to_date, ce.curr_estimate) * cm.orig_contract_amt as earned_revenue,
         cm.billed_amt - (DIV0(ctd.cost_to_date, pe.proj_estimate) * cm.contract_amt) as over_under_billed,
         -- oc.collected_to_date,
-        round(ar.ar_balance, 2) as ar_balance,
+        ar.ar_balance as ar_balance,
         -- -- ctd.cost_to_date,
-        round(ap.ap_balance, 2) as ap_balance,
-        round((cm.billed_amt - ar.ar_balance - cm.CURRENT_RETAIN_AMT) - (ctd.cost_to_date - ap.ap_balance), 2) as cash_flow,
+        ap.ap_balance as ap_balance,
+        (cm.billed_amt - ar.ar_balance - cm.CURRENT_RETAIN_AMT) - (ctd.cost_to_date - ap.ap_balance) as cash_flow,
         oe.orig_estimate,
         ce.curr_estimate,
         pe.proj_estimate,
         ctd.cost_to_date,
         pe.proj_estimate - ctd.cost_to_date as cost_to_complete,
-        round(ce.curr_estimate - pe.proj_estimate, 0) as over_under,
+        ce.curr_estimate - pe.proj_estimate as over_under,
         -- ctd.committed_cost,
-        round(DIV0(ctd.cost_to_date, pe.proj_estimate) * 100, 2) as percent_complete 
+        DIV0(ctd.cost_to_date, pe.proj_estimate) as percent_complete 
     from
     contract_master as cm
     left join 
@@ -126,4 +127,5 @@ with contract_master as (
     committed_cost as cc 
     using(jcco, job)
 )
-select * from header
+select distinct * 
+from header

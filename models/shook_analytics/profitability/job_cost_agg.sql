@@ -242,7 +242,21 @@ WITH
                 AND jmf."CostType" = jcc."CostType"
                 AND jmf."PhaseGroup" = jcc."PhaseGroup"
                 AND jmf."Phase" = jcc."Phase"*/
+    ),
+    add_descriptions as (
+        SELECT
+            *,
+            concat("CostTypeNumber", ' - ', "CostTypeName") as "CostTypeDescription",
+            concat("PHASE", ' - ', "Description") as "PhaseDescription",
+            CASE
+                WHEN "PHASE" = '801000.901.' THEN 'Profit_On_CO'
+                WHEN "Division" = '80' THEN 'General'
+                ELSE 'Other'
+            END AS "SupplementalConditions"
+        FROM
+            job_cost_detail
     )
-SELECT *
+SELECT 
+    *
 FROM 
-job_cost_detail
+    add_descriptions
