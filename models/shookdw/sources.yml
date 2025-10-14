@@ -37,6 +37,7 @@ sources:
       - name: new_sales_data_may25
       - name: new_sales_data_jun25
       - name: new_sales_data_jul25
+      - name: pending_backlog_data_aug25
   - name: metadata
     database: shookdw
     schema: metadata
