@@ -8,6 +8,12 @@ with pending_backlog as (
         cast(pending_backlog_margin as float) as pending_backlog_margin
     from 
         {{ ref('pending_backlog') }}
+), latest_backlog as (
+    select 
+        * 
+    from 
+    pending_backlog 
+    where mth = (select max(mth) from pending_backlog)
 )
 
-select * from pending_backlog
+select * from latest_backlog

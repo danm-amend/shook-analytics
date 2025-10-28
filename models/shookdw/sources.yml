@@ -45,6 +45,7 @@ sources:
       - name: new_sales_file_control
       - name: rolling_forecast_file_control
       - name: wip_file_control
+      - name: pending_backlog_file_control
   - name: P6
     database: shookdw
     schema: P6
