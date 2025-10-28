@@ -1,8 +1,9 @@
 with pending_backlog as (
-    select 
-        *
-    from 
-        {{ source('sharepoint', 'pending_backlog_data_aug25') }}
+    -- select 
+    --     *
+    -- from 
+    --     {{ source('sharepoint', 'pending_backlog_data_aug25') }}
+    {{ union_pending_backlog_dynamic(source('metadata', 'pending_backlog_file_control'), 'shookdw', 'sharepoint') }}
 ), pending_cleaned as (
     select 
         {{first_of_month('"Month"')}} as month_date,
