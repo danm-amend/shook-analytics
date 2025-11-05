@@ -190,6 +190,7 @@ WITH
             ,ct."Description" AS "CostTypeName"
             ,jmf.Phase_Group
             ,jmf.Phase
+            ,SUBSTR(jmf.Phase, 1, 11) AS phase_core
             ,SUBSTR(jmf.Phase, 1,2) AS "Division"
             ,jp."Description"
             
@@ -245,18 +246,33 @@ WITH
     ),
     add_descriptions as (
         SELECT
-            *,
-            concat("CostTypeNumber", ' - ', "CostTypeName") as "CostTypeDescription",
-            concat("PHASE", ' - ', "Description") as "PhaseDescription",
-            CASE
+            *
+            ,concat("CostTypeNumber", ' - ', "CostTypeName") as "CostTypeDescription"
+            ,concat("PHASE", ' - ', "Description") as "PhaseDescription"
+            /*
+            ,CASE
                 WHEN "PHASE" = '801000.901.' THEN 'Profit_On_CO'
                 WHEN "Division" = '80' THEN 'General'
                 ELSE 'Other'
             END AS "SupplementalConditions"
+            */
+            ,CASE
+                WHEN "PHASE_CORE" = '801000.900.' THEN 'Supplemental Conditions'
+                WHEN "PHASE_CORE" = '801000.901.' THEN 'Internal Contract Contingency'
+                WHEN "PHASE_CORE" = '801000.902.' THEN 'Economic Contingency'
+                WHEN "PHASE_CORE" = '801000.903.' THEN 'Labor Goal'
+                WHEN "PHASE_CORE" = '801000.904.' THEN 'Profit on Change Orders'
+                WHEN "PHASE_CORE" = '801000.905.' THEN 'Profit on Bonds and Insurance'
+                WHEN "PHASE_CORE" = '801000.906.' THEN 'Profit on Unit Prices'
+                WHEN "PHASE_CORE" = '801000.907.' THEN 'Profit on Billable Rates'
+                WHEN "PHASE_CORE" = '801000.908.' THEN 'Profit on SDI'
+                ELSE NULL
+            END AS "ProfitEnhancers"
         FROM
             job_cost_detail
     )
 SELECT 
-    *
+    * --DISTINCT "PHASE", "PHASE_CORE", "ProfitEnhancers", "Description"
 FROM 
     add_descriptions
+--WHERE "ProfitEnhancers" IS NOT NULL
