@@ -23,7 +23,7 @@ with projs as (
     left join 
     shookdw.p6.task as b 
     on a.proj_id = b.proj_id  
-    WHERE B.start_week = '2025-10-26' and act_end_date is null
+    WHERE B.start_week = '2025-11-02' and act_end_date is null
 ), baseline_join as (
     select 
         a.proj_id, 

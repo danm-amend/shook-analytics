@@ -39,37 +39,42 @@ with projs as (
         -- ) as negative_float,
         sum(total_float_hr_cnt / day_hr_cnt) as negative_float
     from task_proj
-    where START_WEEK = '2025-10-26'
+    where START_WEEK = '2025-11-02'
     and act_end_date is null
     group by proj_id, p6_full_project_name, day_hr_cnt, week_hr_cnt, start_week
 ), float_fields as (
     select 
         a.*,
-        b."Scheduled_Substantial_Completion_Date" as complete_date,
+        c.Contractural_Substantial_Completion as complete_date,
         b.total_float
     from 
         floats as a 
     left join 
         shookdw.p6.p6_weekly_subtotals as b 
     on a.proj_id = b.proj_id and a.start_week = b.week_ending
+    left join 
+        shookdw.p6.p6_job_header as c 
+    on a.proj_id = trim(c.proj_id)
 ), critical_start_end as (
     select					
-                        t0.proj_id
-                        , min(t1.early_start_date) as critical_path_start
-                        , max(t1.late_end_date) as critical_path_end
-						-- , SUM(NVL(t2.remain_cost, 0)) as Resources_Remaining_on_Longest_Path
+                        t1.proj_id
+                        , t1.start_week as critical_path_start
+                        , t1.early_end_date as critical_path_end
+                        , t1.task_name
+                        , t1.task_type
+                        , pw.wbs_name
     from					float_fields as t0
     LEFT JOIN               shookdw.p6.TASK as t1
     ON                      t0.proj_id = t1.proj_id
     AND                     t1.START_WEEK = t0.start_week
-    AND                     t1.driving_path_flag = 'Y'
-    and                     t1.phys_complete_pct < 100
-    LEFT JOIN				shookdw.p6.TASKRSRC as t2
-    ON						t0.proj_id = t2.proj_id
-    AND                     t2.START_WEEK = t0.start_week
-    AND                     t1.TASK_ID = t2.TASK_ID
-    and                     t2.RSRC_TYPE = 'RT_Labor'
-    GROUP BY                t0.proj_id
+    left join 
+    shookdw.p6.projwbs as pw 
+    on pw.proj_id = t1.proj_id and t1.wbs_id = pw.wbs_id 
+    where 1=1 
+    and wbs_name in ('Milestones')
+    and task_type in ('TT_FinMile')
+    and t1.start_week = '2025-11-02' and t1.act_end_date is null 
+    qualify row_number() over (partition by t0.proj_id order by t1.early_end_date asc) = 1
 ), float_duration_calc as (
     select 
         *,

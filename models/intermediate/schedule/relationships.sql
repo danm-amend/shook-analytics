@@ -16,7 +16,7 @@ with projs as (
     left join 
     shookdw.p6.taskpred as b 
     using(proj_id, task_id)
-    where start_week = '2025-10-26'
+    where start_week = '2025-11-02'
     and a.act_end_date is null 
     -- group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type
 ), relations_count as (
