@@ -7,8 +7,9 @@ with projs as (
     select 
         *
     from shookdw.p6.project
-    where orig_proj_id is not null and last_baseline_update_date is not null
-    qualify rank() over (partition by orig_proj_id order by last_baseline_update_date desc, proj_id desc) = 1
+    where orig_proj_id is not null 
+    and last_baseline_update_date is not null
+    qualify rank() over (partition by orig_proj_id order by last_baseline_update_date desc, proj_id asc) = 1
 ), proj_baseline as (
     select 
         a.*,
@@ -28,20 +29,20 @@ with projs as (
     left join 
     shookdw.p6.task as b
     using(proj_id)
-    where b.start_week = '2025-10-26'
+    where b.start_week = '2025-11-02'
     group by a.PROJ_ID
     
 ), baseline_complete_count as (
     select 
         a.proj_id
         , a.baseline_proj_id
-        , sum(iff(b.target_end_date <= '2025-10-26', 1, 0)) as baseline_complete
+        , sum(iff(b.target_end_date <= '2025-11-02', 1, 0)) as baseline_complete
     from proj_baseline as a 
     left join 
     shookdw.p6.task as b 
     on a.baseline_proj_id = b.proj_id
     -- where a.proj_id = '21837'
-    where b.start_week = '2025-10-26'
+    where b.start_week = '2025-11-02'
     group by a.proj_id, baseline_proj_id
 )
 , both_counts as (
@@ -77,17 +78,17 @@ with projs as (
     left join 
         shookdw.p6.task as c
     on a.baseline_proj_id = c.proj_id and b.task_code = c.task_code
-    where b.start_week = '2025-10-26' 
-    and c.start_week = '2025-10-26'
+    where b.start_week = '2025-11-02' 
+    and c.start_week = '2025-11-02'
     -- and a.proj_id = '21837'
 ), missed_tasks_counts as (
     select 
         proj_Id, 
         baseline_proj_id,
         sum(iff(act_end_date > bs_target
-            or (act_end_date is null and bs_target <= '2025-10-26')
+            or (act_end_date is null and bs_target <= '2025-11-02')
             , 1, 0)) as num_missed_tasks,
-        sum(iff(bs_target <= '2025-10-26', 1, 0)) as num_finished_baseline
+        sum(iff(bs_target <= '2025-11-02', 1, 0)) as num_finished_baseline
     from
         missed_tasks
     group by proj_id, baseline_proj_id

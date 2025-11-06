@@ -12,7 +12,7 @@ with projs as (
     on a.proj_id = b.proj_id  
     where 1=1 
     -- and b.act_end_date is null 
-    and START_WEEK = '2025-10-26'
+    and START_WEEK = '2025-11-02'
 ), pred_task as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, a.act_start_date, a.act_end_date, b.pred_task_id, b.pred_type, b.pred_proj_id  
     -- , count(distinct pred_task_id) as num_pred_tasks
