@@ -85,8 +85,8 @@ with projs as (
     select 
         proj_Id, 
         baseline_proj_id,
-        sum(iff(act_end_date > bs_target
-            or (act_end_date is null and bs_target <= '2025-11-02')
+        sum(iff(act_end_date > bs_early_end
+            or (act_end_date is null and bs_early_end <= '2025-11-02')
             , 1, 0)) as num_missed_tasks,
         sum(iff(bs_target <= '2025-11-02', 1, 0)) as num_finished_baseline
     from
@@ -118,7 +118,7 @@ with projs as (
             else 'F' 
         end as bei_grade,
         num_Missed_tasks,
-        (num_missed_tasks / baseline_complete) * 100 as missed_pct,
+        (1 - (num_missed_tasks / baseline_complete)) * 100 as missed_pct,
         case 
             when missed_pct >= 100 then 'A'
             when missed_pct >= 95 then 'B'
