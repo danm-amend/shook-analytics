@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 with grading_metrics as (
     select 
         cast(a.proj_id as string) as proj_id,
