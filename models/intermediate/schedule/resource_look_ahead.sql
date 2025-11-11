@@ -3,7 +3,8 @@ with projs as (
         PROJ_ID as p6_proj_id,
         project_name as viewpoint_proj_id,
         P6_full_project_name
-    from shookdw.p6.p6_job_header 
+    from 
+    {{ source('P6', 'P6_JOB_HEADER') }}
 ), field_labor as (
     select 
         a.*,
@@ -15,7 +16,7 @@ with projs as (
             AND (select max(start_week) from intermediate.schedule.latest_date), "ActualCost", 0)) as current_labor_cost
     from projs as a
     left join 
-    shookdw.viewpoint.bjccd as b 
+    {{ source('shookdw', 'bjccd') }} as b 
     on a.viewpoint_proj_id = split_part(b."Job", '.', 1)  
     -- where b."ActualDate" between dateadd(DAY, 1, DATEADD(WEEK, -6, (select max(start_week) from intermediate.schedule.latest_date)))
     -- AND (select max(start_week) from intermediate.schedule.latest_date)
@@ -27,7 +28,8 @@ with projs as (
         sum(iff(week_ending = DATEADD(WEEK, -6, (select max(start_week) from intermediate.schedule.latest_date)), "Resources_Completed_To_Date", 0)) as resource_6wa,
         sum(iff(week_ending = DATEADD(WEEK, -1, (select max(start_week) from intermediate.schedule.latest_date)), "Resources_Completed_To_Date", 0)) as resource_1wa,
         sum(iff(week_ending = (select max(start_week) from intermediate.schedule.latest_date), "Resources_Completed_To_Date", 0)) as resource_end,
-    from shookdw.p6.p6_weekly_subtotals
+    from 
+    {{ source('P6', 'P6_WEEKLY_SUBTOTALS') }}
     group by proj_id
 ), resources_cost as (
     select 
@@ -49,9 +51,9 @@ with projs as (
         b."Next_Week_Resources" as next_week_resources
     from cpi as a 
     left join 
-    shookdw.p6.p6_weekly_subtotals as b
+    {{ source('P6', 'P6_WEEKLY_SUBTOTALS') }} as b
     on a.p6_proj_id = b.proj_id
-    where b.week_ending = (select max(start_week) from intermediate.schedule.latest_date)
+    where b.week_ending = (select max(START_WEEK) from {{ ref('latest_date') }})
 ), resource_look_ahead as (
     select 
         p6_proj_id as proj_id,

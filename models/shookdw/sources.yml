@@ -55,5 +55,8 @@ sources:
       - name: CALENDAR
       - name: TASK
       - name: P6_JOB_HEADER
+      - name: PROJWBS
+      - name: P6_WEEKLY_SUBTOTALS
+      - name: TASKPRED
       
       

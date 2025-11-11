@@ -1,29 +1,31 @@
 with projs as (
-    select a.*, b.last_recalc_date from shookdw.p6.p6_job_header as a 
+    select a.*, b.last_recalc_date 
+    from 
+        {{ source('P6', 'P6_JOB_HEADER') }} as a 
     left join 
-    shookdw.p6.project as b 
+        {{ source('P6', 'PROJECT') }} as b 
     using(proj_id)
 ), task_proj as (
     select P6_FUll_PROJECT_NAME, last_recalc_date
     , b.*
     FROM projs as a
     left join 
-    shookdw.p6.task as b 
+    {{ source('P6', 'TASK') }} as b 
     on a.proj_id = b.proj_id  
 ), pred_task as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, count(distinct pred_task_id) as num_pred_tasks
     from task_proj as a 
     left join 
-    shookdw.p6.taskpred as b 
+    {{ source('P6', 'TASKPRED') }} as b 
     using(proj_id, task_id)
-    where start_week = '2025-11-02'
+    where start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
     group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type
 ), succ_tasks as (
     select 
         a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, num_pred_tasks, count(distinct b.pred_task_id) as num_suc_tasks
     from pred_task as a 
     left join 
-    shookdw.p6.taskpred as b 
+    {{ source('P6', 'TASKPRED') }} as b 
     on a.proj_id = b.proj_id and a.task_id = b.pred_task_id
     group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, num_pred_tasks
 ), missing_logic as (

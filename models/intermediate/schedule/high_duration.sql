@@ -1,19 +1,21 @@
 with projs as (
     select a.*, b.clndr_id 
-    from shookdw.p6.p6_job_header as a 
+    from 
+    {{ source('P6', 'P6_JOB_HEADER') }} as a 
     left join 
-    shookdw.p6.project as b 
+    {{ source('P6', 'PROJECT') }} as b 
     using(proj_id)
 ), calendar as (
     select a.*, b.day_hr_cnt, b.week_hr_cnt 
         from projs as a 
     left join 
-        shookdw.p6.calendar as b 
+        {{ source('P6', 'CALENDAR') }} as b 
     on a.clndr_id = b.clndr_id 
 ), baseline as (
     select 
         *
-    from shookdw.p6.project
+    from 
+    {{ source('P6', 'PROJECT') }}
     where orig_proj_id is not null and last_baseline_update_date is not null
     qualify rank() over (partition by orig_proj_id order by last_baseline_update_date desc, proj_id desc) = 1
 ), task_proj as (
@@ -21,9 +23,10 @@ with projs as (
     , b.proj_id, b.task_code, b.task_id, target_drtn_hr_cnt
     FROM calendar as a
     left join 
-    shookdw.p6.task as b 
+    {{ source('P6', 'TASK') }} as b 
     on a.proj_id = b.proj_id  
-    WHERE B.start_week = '2025-11-02' and act_end_date is null
+    WHERE B.start_week = (select max(START_WEEK) from {{ ref('latest_date') }}) 
+    and act_end_date is null
 ), baseline_join as (
     select 
         a.proj_id, 
@@ -39,7 +42,7 @@ with projs as (
         baseline as b 
     on a.proj_id = b.orig_proj_id 
     left join 
-        shookdw.p6.task as c 
+        {{ source('P6', 'TASK') }} as c 
     on b.proj_id = c.proj_id and a.task_code = c.task_code
 ), proj_agg as (
     select 

@@ -1,24 +1,27 @@
 with projs as (
-    select a.*, b.last_recalc_date from shookdw.p6.p6_job_header as a 
+    select a.*, b.last_recalc_date 
+    from 
+        {{ source('P6', 'P6_JOB_HEADER') }}
+    as a 
     left join 
-    shookdw.p6.project as b 
+    {{ source('P6', 'PROJECT') }} as b 
     using(proj_id)
 ), task_proj as (
     select P6_FUll_PROJECT_NAME, last_recalc_date
     , b.*
     FROM projs as a
     left join 
-    shookdw.p6.task as b 
+    {{ source('P6', 'TASK') }} as b 
     on a.proj_id = b.proj_id  
     where 1=1 
     -- and b.act_end_date is null 
-    and START_WEEK = '2025-11-02'
+    and START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
 ), pred_task as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, a.act_start_date, a.act_end_date, b.pred_task_id, b.pred_type, b.pred_proj_id  
     -- , count(distinct pred_task_id) as num_pred_tasks
     from task_proj as a 
     left join 
-    shookdw.p6.taskpred as b 
+    {{ source('P6', 'TASKPRED') }} as b 
     using(proj_id, task_id)
     -- where a.act_end_date is null
     -- group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type
