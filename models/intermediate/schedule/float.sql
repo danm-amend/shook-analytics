@@ -1,21 +1,21 @@
 with projs as (
     select a.*, b.clndr_id 
-    from shookdw.p6.p6_job_header as a 
+    from {{ source('P6', 'P6_JOB_HEADER') }} as a 
     left join 
-    shookdw.p6.project as b 
+    {{ source('P6', 'PROJECT') }} as b 
     using(proj_id)
 ), calendar as (
     select a.*, b.day_hr_cnt, b.week_hr_cnt 
         from projs as a 
     left join 
-        shookdw.p6.calendar as b 
+        {{ source('P6', 'CALENDAR') }} as b 
     on a.clndr_id = b.clndr_id 
 ), task_proj as (
     select P6_FUll_PROJECT_NAME, day_hr_cnt, week_hr_cnt
     , b.*
     FROM calendar as a
     left join 
-    shookdw.p6.task as b 
+    {{ source('P6', 'TASK') }} as b 
     on a.proj_id = b.proj_id  
 ), floats as ( 
     select 
@@ -31,15 +31,9 @@ with projs as (
                 else 0 
             end 
         ) as high_float,
-        --         sum(
-        --     case 
-        --         when (total_float_hr_cnt / day_hr_cnt) < 0 then 1 
-        --         else 0 
-        --     end 
-        -- ) as negative_float,
         sum(total_float_hr_cnt / day_hr_cnt) as negative_float
     from task_proj
-    where START_WEEK = '2025-11-02'
+    where START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
     and act_end_date is null
     group by proj_id, p6_full_project_name, day_hr_cnt, week_hr_cnt, start_week
 ), float_fields as (
@@ -50,10 +44,10 @@ with projs as (
     from 
         floats as a 
     left join 
-        shookdw.p6.p6_weekly_subtotals as b 
+        {{ source('P6', 'P6_WEEKLY_SUBTOTALS') }} as b 
     on a.proj_id = b.proj_id and a.start_week = b.week_ending
     left join 
-        shookdw.p6.p6_job_header as c 
+        {{ source('P6', 'P6_JOB_HEADER') }} as c 
     on a.proj_id = trim(c.proj_id)
 ), critical_start_end as (
     select					
@@ -64,16 +58,17 @@ with projs as (
                         , t1.task_type
                         , pw.wbs_name
     from					float_fields as t0
-    LEFT JOIN               shookdw.p6.TASK as t1
+    LEFT JOIN               {{ source('P6', 'TASK') }} as t1
     ON                      t0.proj_id = t1.proj_id
     AND                     t1.START_WEEK = t0.start_week
     left join 
-    shookdw.p6.projwbs as pw 
+    {{ source('P6', 'PROJWBS') }} as pw 
     on pw.proj_id = t1.proj_id and t1.wbs_id = pw.wbs_id 
     where 1=1 
     and wbs_name in ('Milestones')
     and task_type in ('TT_FinMile')
-    and t1.start_week = '2025-11-02' and t1.act_end_date is null 
+    and t1.start_week = (select max(START_WEEK) from {{ ref('latest_date') }}) 
+    and t1.act_end_date is null 
     qualify row_number() over (partition by t0.proj_id order by t1.early_end_date asc) = 1
 ), float_duration_calc as (
     select 
