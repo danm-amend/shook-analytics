@@ -13,7 +13,9 @@ with pending_backlog as (
         * 
     from 
     pending_backlog 
-    where mth = (select max(mth) from pending_backlog)
+
+    -- where mth = (select max(mth) from pending_backlog)
+    
 )
 
 select * from latest_backlog

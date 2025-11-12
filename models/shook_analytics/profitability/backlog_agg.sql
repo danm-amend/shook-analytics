@@ -26,6 +26,7 @@ with backlog as (
         ba.revenue_backlog,
         pb.revenue_pending_backlog,
         ba.ytd_revenue,
+
         ba.revenue_backlog / ( ba.ytd_revenue / month(ba.mth) ) as executed_backlog_months,
         pb.revenue_pending_backlog/ ( ba.ytd_revenue / month(ba.mth) ) as pending_backlog_months
     from 
