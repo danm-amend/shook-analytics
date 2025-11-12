@@ -35,3 +35,5 @@ with backlog as (
 )
 
 select * from backlog_calcs
+order by mth_of_year asc
+
