@@ -5,4 +5,7 @@ with new_sales as (
         {{ ref('new_sales_amend') }}
 )
 
-select * from new_sales
+select 
+*
+from new_sales
+

@@ -3,17 +3,19 @@ with union_sales as (
 ), col_clean as (
     select 
         {{first_of_month('"Month"')}} as month_date,
+        source_table,
         "Region" as region,
+
         "Market Channel" as market_channel,
         "Title" as project,
         CASE
-            WHEN "Plan Sales" like '%-%' THEN null
+            WHEN trim("Plan Sales") like '-' THEN null
             WHEN trim("Plan Sales") like 'nan' THEN null
             WHEN "Plan Sales" like '%(%)%' THEN -1 * to_number(replace(replace(replace("Plan Sales", ',', ''), '(', ''), ')', ''))
             ELSE to_number(replace("Plan Sales", ',', ''))
         END as plan_sales,
         CASE
-            WHEN "Actual Sales" like '%-%' THEN null
+            WHEN trim("Actual Sales") like '-' THEN null
             WHEN trim("Actual Sales") like 'nan' THEN null
             WHEN "Actual Sales" like '%(%)%' THEN -1 * to_number(replace(replace(replace("Actual Sales", ',', ''), '(', ''), ')', ''))
             ELSE to_number(replace("Actual Sales", ',', ''))
@@ -21,4 +23,7 @@ with union_sales as (
     from union_sales 
 )
 
-select * from col_clean
+select 
+* 
+from col_clean
+

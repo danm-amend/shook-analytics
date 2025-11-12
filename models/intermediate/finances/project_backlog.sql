@@ -14,4 +14,7 @@ with wip_union as (
     from wip_union
 )
 
-select * from wip_backlog
+select *
+from wip_backlog 
+
+
