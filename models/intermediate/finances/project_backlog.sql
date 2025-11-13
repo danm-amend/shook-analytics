@@ -12,9 +12,17 @@ with wip_union as (
     "Backlog in 000's Revenue" as revenue_backlog,
     "Year Revenue" as ytd_revenue
     from wip_union
+    where trim("Backlog in 000's Revenue") != '0'
+
 )
 
 select *
-from wip_backlog 
+from wip_backlog
+where date(file_month_year) = '2025-08-01'
+
+
+
+
+
 
 
