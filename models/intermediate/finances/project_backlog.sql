@@ -16,9 +16,10 @@ with wip_union as (
 
 )
 
+
 select *
 from wip_backlog
-where date(file_month_year) = '2025-08-01'
+
 
 
 
