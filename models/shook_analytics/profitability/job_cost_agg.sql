@@ -244,7 +244,48 @@ WITH
                 AND jmf."PhaseGroup" = jcc."PhaseGroup"
                 AND jmf."Phase" = jcc."Phase"*/
     ),
-    add_descriptions as (
+
+    add_metric_indicators AS (
+        SELECT
+            *
+            ,CASE
+                WHEN "Division" not in ('80', '96', '97', '98')
+                    AND ROUND("CumulativeProjected" - "CumulativeActualCost", 0) < 0 THEN 1
+                ELSE 0
+            END AS "NegativeCTCIndicator"
+            ,CASE
+                WHEN "Division" not in ('80', '96', '97', '98')
+                    AND CAST("CostTypeNumber" AS varchar) in ('2', '3')
+                    AND "CumulativeCommittedCost" > 0 
+                    AND "CumulativeActualCost" < "CumulativeProjected"
+                    AND "CumulativeProjected" >= "CumulativeCommittedCost" * 1.05 THEN 1
+                ELSE 0
+            END AS "POVarianceOppIndicator"
+            ,CASE
+                WHEN "Division" in ('96', '97', '98') AND "CumulativeActualCost" > "CumulativeProjected" THEN 1
+                ELSE 0
+            END AS "ProfitAtRiskIndicator"
+        FROM
+            job_cost_detail
+    ),
+    add_metric_calcs AS (
+        SELECT
+            *
+            ,CASE
+                WHEN "NegativeCTCIndicator" = 1 THEN ROUND("CumulativeProjected" - "CumulativeActualCost", 2)
+                ELSE 0
+            END AS "NegativeCTCValue"
+            ,CASE
+                WHEN "POVarianceOppIndicator" = 1 THEN ROUND("CumulativeProjected" - "CumulativeCommittedCost" + LEAST(0, "CumulativeCommittedCost" - "CumulativeActualCost"), 2)
+                ELSE 0
+            END AS "POVarianceOppValue"
+            ,CASE
+                WHEN "ProfitAtRiskIndicator" = 1 THEN ROUND("CumulativeActualCost" - "CumulativeProjected", 2)
+                ELSE 0
+            END AS "ProfitAtRiskValue"
+        FROM add_metric_indicators
+    ) 
+    ,add_descriptions as (
         SELECT
             *
             ,concat("CostTypeNumber", ' - ', "CostTypeName") as "CostTypeDescription"
@@ -269,10 +310,14 @@ WITH
                 ELSE NULL
             END AS "ProfitEnhancers"
         FROM
-            job_cost_detail
+            add_metric_calcs
     )
 SELECT 
-    * --DISTINCT "PHASE", "PHASE_CORE", "ProfitEnhancers", "Description"
+    *
 FROM 
     add_descriptions
---WHERE "ProfitEnhancers" IS NOT NULL
+
+-- SELECT job, SUM("NegativeCTCValue"), SUM("POVarianceOppValue"), SUM("ProfitAtRiskValue") 
+-- FROM add_metric_calcs 
+-- where job = '123040.' and "cost_month" = '2025-11-01' 
+-- GROUP BY job
