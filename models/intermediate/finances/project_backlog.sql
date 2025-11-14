@@ -12,8 +12,7 @@ with wip_union as (
     "Backlog in 000's Revenue" as revenue_backlog,
     "Year Revenue" as ytd_revenue
     from wip_union
-    where trim("Backlog in 000's Revenue") != '0'
-
+    where "include_job" = 'True'
 )
 
 
