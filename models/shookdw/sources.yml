@@ -59,5 +59,10 @@ sources:
       - name: PROJWBS
       - name: P6_WEEKLY_SUBTOTALS
       - name: TASKPRED
-      
+  - name: unanet
+    database: shookdw
+    schema: unanet
+    tables:
+      - name: opportunities_v1
+
       
