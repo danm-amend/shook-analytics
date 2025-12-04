@@ -29,20 +29,20 @@ with projs as (
     left join 
     shookdw.p6.task as b
     using(proj_id)
-    where b.start_week = '2025-11-02'
+    where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
     group by a.PROJ_ID
     
 ), baseline_complete_count as (
     select 
         a.proj_id
         , a.baseline_proj_id
-        , sum(iff(b.target_end_date <= '2025-11-02', 1, 0)) as baseline_complete
+        , sum(iff(b.target_end_date <= (select max(START_WEEK) from {{ ref('latest_date') }}), 1, 0)) as baseline_complete
     from proj_baseline as a 
     left join 
     shookdw.p6.task as b 
     on a.baseline_proj_id = b.proj_id
     -- where a.proj_id = '21837'
-    where b.start_week = '2025-11-02'
+    where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
     group by a.proj_id, baseline_proj_id
 )
 , both_counts as (
@@ -78,17 +78,17 @@ with projs as (
     left join 
         shookdw.p6.task as c
     on a.baseline_proj_id = c.proj_id and b.task_code = c.task_code
-    where b.start_week = '2025-11-02' 
-    and c.start_week = '2025-11-02'
+    where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }}) 
+    and c.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
     -- and a.proj_id = '21837'
 ), missed_tasks_counts as (
     select 
         proj_Id, 
         baseline_proj_id,
         sum(iff(act_end_date > bs_early_end
-            or (act_end_date is null and bs_early_end <= '2025-11-02')
+            or (act_end_date is null and bs_early_end <= (select max(START_WEEK) from {{ ref('latest_date') }}))
             , 1, 0)) as num_missed_tasks,
-        sum(iff(bs_target <= '2025-11-02', 1, 0)) as num_finished_baseline
+        sum(iff(bs_target <= (select max(START_WEEK) from {{ ref('latest_date') }}), 1, 0)) as num_finished_baseline
     from
         missed_tasks
     group by proj_id, baseline_proj_id
