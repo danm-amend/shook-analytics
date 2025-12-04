@@ -25,6 +25,7 @@ with open_opps as (
     from 
         {{ ref("stg_opportunities") }}
     where stage_type = 'Open'
+    and delete_record = false
 )
 
 select * from open_opps
