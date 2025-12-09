@@ -18,27 +18,28 @@ with projs as (
     left join 
     {{ source('P6', 'TASKPRED') }} as b 
     using(proj_id, task_id)
-    where start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
-    and a.act_end_date is null 
+    -- where start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
+    where a.act_end_date is null 
     -- group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type
 ), relations_count as (
     select 
-        proj_id, P6_FUll_PROJECT_NAME,
+        proj_id, P6_FUll_PROJECT_NAME, start_week,
         count(distinct relationship_id) as total_remaining_relationships,
         sum(iff(pred_type = 'PR_FS', 1, 0)) as total_fs_relationships
     from 
         relations
-    group by proj_id, P6_FUll_PROJECT_NAME
+    group by proj_id, P6_FUll_PROJECT_NAME, start_week
 ), relations_pct as (
     select 
         *,
-        (total_fs_relationships / total_remaining_relationships) * 100 as fs_pct 
+        div0(total_fs_relationships, total_remaining_relationships) * 100 as fs_pct 
     from 
         relations_count
 ), relations_grade as (
     select 
         proj_id,
         p6_full_project_name as proj_name,
+        start_week,
         total_remaining_relationships,
         total_fs_relationships,
         fs_pct,
@@ -50,5 +51,8 @@ with projs as (
             else 'F'
         end as fs_grade
     from relations_pct
+    where start_week is not null
 )
 select * from relations_grade
+where start_week is not null
+order by start_week desc, proj_id

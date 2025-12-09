@@ -4,10 +4,11 @@ with grading_metrics as (
     select 
         cast(a.proj_id as string) as proj_id,
         a.proj_name, 
+        a.start_week,
         a.num_hard_consts,
         a.hard_consts_grade,
         a.pct_soft_consts,
-        a.sof_consts_grade,
+        a.soft_consts_grade,
         a.num_invalid_dates,
         a.invalid_date_grade,
         b.pct_high_float,
@@ -40,75 +41,75 @@ with grading_metrics as (
         {{ ref('constraints') }} as a 
     left join 
         {{ ref('float') }} as b 
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('missing_logic') }} as c 
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('relationships') }} as d
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('lag_lead') }} as e
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('out_of_sequence') }} as f
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('resource_look_ahead') }} as g
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('baseline_metrics') }} as h
-        using(proj_id)
+        using(proj_id, start_week)
     left join 
         {{ ref('high_duration') }} as i
-        using(proj_id)
+        using(proj_id, start_week)
 ), long_format as (
-    select proj_id, proj_name, 'hard_constraints' as metric_name, num_hard_consts as metric_value, hard_consts_grade as metric_grade
+    select proj_id, proj_name, start_week, 'hard_constraints' as metric_name, num_hard_consts as metric_value, hard_consts_grade as metric_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'soft_constraints', pct_soft_consts, sof_consts_grade
+    union all select proj_id, proj_name, start_week, 'soft_constraints', pct_soft_consts, soft_consts_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'invalid_dates', num_invalid_dates, invalid_date_grade
+    union all select proj_id, proj_name, start_week, 'invalid_dates', num_invalid_dates, invalid_date_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'high_float', pct_high_float, high_float_grade
+    union all select proj_id, proj_name, start_week, 'high_float', pct_high_float, high_float_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'total_float_days', total_float_days, negative_float_grade
+    union all select proj_id, proj_name, start_week, 'total_float_days', total_float_days, negative_float_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'tfci', TFCI, tfci_grade
+    union all select proj_id, proj_name, start_week, 'tfci', TFCI, tfci_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'cpli', cpli, cpli_grade
+    union all select proj_id, proj_name, start_week, 'cpli', cpli, cpli_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, 'missing_logic', missing_logic_pct, missing_logic_grade
+    union all select proj_id, proj_name, start_week, 'missing_logic', missing_logic_pct, missing_logic_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, 'fs_relationships', fs_pct, fs_grade
+    union all select proj_id, proj_name, start_week, 'fs_relationships', fs_pct, fs_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'lags', lags_pct, lags_grade
+    union all select proj_id, proj_name, start_week, 'lags', lags_pct, lags_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'leads', leads_pct, leads_grade
+    union all select proj_id, proj_name, start_week, 'leads', leads_pct, leads_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, 'out_of_sequence', out_seq_pct, out_seq_grade
+    union all select proj_id, proj_name, start_week, 'out_of_sequence', out_seq_pct, out_seq_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'resource_look_ahead', resource_look_ahead_pct, resource_look_ahead_grade
+    union all select proj_id, proj_name, start_week, 'resource_look_ahead', resource_look_ahead_pct, resource_look_ahead_grade
     from grading_metrics
 
-    union all select proj_id, proj_name, 'bei', bei, bei_grade
+    union all select proj_id, proj_name, start_week, 'bei', bei, bei_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, 'missed_activities', missed_pct, miss_act_grade
+    union all select proj_id, proj_name, start_week, 'missed_activities', missed_pct, miss_act_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, 'long_duration', long_dur_pct, dur_grade
+    union all select proj_id, proj_name, start_week, 'long_duration', long_dur_pct, dur_grade
     from grading_metrics
 )
 
