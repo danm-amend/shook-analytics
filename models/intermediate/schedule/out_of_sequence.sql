@@ -13,18 +13,15 @@ with projs as (
     left join 
     {{ source('P6', 'TASK') }} as b 
     on a.proj_id = b.proj_id  
-    where 1=1 
+    -- where 1=1 
     -- and b.act_end_date is null 
-    and START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
+    -- and START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
 ), pred_task as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, a.act_start_date, a.act_end_date, b.pred_task_id, b.pred_type, b.pred_proj_id  
-    -- , count(distinct pred_task_id) as num_pred_tasks
     from task_proj as a 
     left join 
     {{ source('P6', 'TASKPRED') }} as b 
     using(proj_id, task_id)
-    -- where a.act_end_date is null
-    -- group by a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type
 ), pred_task_details as (
     select 
         a.*,
@@ -35,7 +32,7 @@ with projs as (
         pred_task as a 
     left join 
         task_proj as b 
-    on a.proj_id = b.proj_id and a.pred_task_id = b.task_id
+    on a.proj_id = b.proj_id and a.pred_task_id = b.task_id and a.start_week = b.start_week
     where pred_task_id is not null and pred_task_name is not null 
 ), pred_task_calc as (
     select 
@@ -62,6 +59,7 @@ with projs as (
     select 
         proj_id, 
         p6_full_project_name as proj_name,
+        start_week,
         total_task_cnt,
         out_seq_cnt,
         (out_seq_cnt / total_task_cnt) * 100 as out_seq_pct,
@@ -76,3 +74,6 @@ with projs as (
         out_seq_cnt
 )
 select * from out_seq_grade
+where start_week is not null
+order by start_week desc, proj_id
+-- select * from pred_task

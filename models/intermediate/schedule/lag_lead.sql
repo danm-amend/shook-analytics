@@ -19,28 +19,29 @@ with projs as (
     left join 
     {{ source('P6', 'TASKPRED') }} as b 
     using(proj_id, task_id)
-    where start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
-    and a.act_end_date is null 
+    -- where start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
+    where a.act_end_date is null 
 ), lead_lag_count as (
     select 
-        proj_id, P6_FUll_PROJECT_NAME
+        proj_id, P6_FUll_PROJECT_NAME, start_week
         , count(distinct relationship_id) as remaining_relationships
         , sum(iff(lag_hr_cnt > 0, 1, 0)) as num_lags
         , sum(iff(lag_hr_cnt < 0, 1, 0)) as num_leads
     from 
         lead_lag
-    group by proj_id, P6_FUll_PROJECT_NAME
+    group by proj_id, P6_FUll_PROJECT_NAME, start_week
 ), lead_lag_pct as (
     select 
         *,
-        (num_lags / remaining_relationships) * 100 as lags_pct,
-        (num_leads / remaining_relationships) * 100 as leads_pct
+        div0(num_lags, remaining_relationships) * 100 as lags_pct,
+        div0(num_leads, remaining_relationships) * 100 as leads_pct
     from 
         lead_lag_count
 ), lead_lag_grade as (
     select 
         proj_id,
         p6_full_project_name as proj_name,
+        start_week,
         remaining_relationships as total_remaining_relationships,
         num_lags as lags_cnt,
         lags_pct,
@@ -62,3 +63,5 @@ with projs as (
         lead_lag_pct 
 )
 select * from lead_lag_grade
+where start_week is not null 
+order by start_week desc, proj_id

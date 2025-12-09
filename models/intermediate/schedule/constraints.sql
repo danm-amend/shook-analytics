@@ -13,6 +13,7 @@ with
         select
             proj_id,
             p6_full_project_name as proj_name,
+            start_week,
             last_recalc_date,
             count(distinct task_id) as total_tasks_remaining,
             sum(
@@ -31,27 +32,29 @@ with
 
         from task_proj
         where
-            start_week >= (select max(START_WEEK) from {{ ref('latest_date') }})
-            and act_end_date is null
-        group by proj_id, p6_full_project_name, last_recalc_date
+            -- start_week >= (select max(START_WEEK) from {{ ref('latest_date') }})
+            -- and 
+            act_end_date is null
+        group by proj_id, p6_full_project_name, start_week, last_recalc_date
     ), const_grades as (
         select 
             proj_id, 
             proj_name,
+            start_week,
             num_hard_consts,
             case
                 when num_hard_consts < 1 then 'A'
                 else 'F' 
             end as hard_consts_grade, 
             num_soft_consts,
-            (num_soft_consts / total_tasks_remaining) * 100 as pct_soft_consts,
+            div0(num_soft_consts, total_tasks_remaining) * 100 as pct_soft_consts,
             case
                 when pct_soft_consts < 4 then 'A'
                 when pct_soft_consts < 5 then 'B'
                 when pct_soft_consts < 6 then 'C'
                 when pct_soft_consts < 7 then 'D'
                 else 'F'
-            end as sof_consts_grade,
+            end as soft_consts_grade,
             num_invalid_dates,
             case
                 when num_invalid_dates = 0 then 'A'
@@ -65,3 +68,5 @@ with
     )
 select *
 from const_grades
+where start_week is not null
+order by start_week desc, proj_id 

@@ -33,8 +33,8 @@ with projs as (
         ) as high_float,
         sum(total_float_hr_cnt / day_hr_cnt) as negative_float
     from task_proj
-    where START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
-    and act_end_date is null
+    -- where START_WEEK = (select max(START_WEEK) from {{ ref('latest_date') }})
+    where act_end_date is null
     group by proj_id, p6_full_project_name, day_hr_cnt, week_hr_cnt, start_week
 ), float_fields as (
     select 
@@ -140,3 +140,5 @@ with projs as (
 )
 -- select * from float_cons_idx
 select * from float_grade
+order by start_week desc, proj_id
+-- select * from task_proj
