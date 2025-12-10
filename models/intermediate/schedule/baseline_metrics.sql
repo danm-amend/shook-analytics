@@ -140,6 +140,7 @@ with projs as (
 -- select * from both_counts_missed_tasks
 -- select * from baseline_grade
 select * from baseline_grade
+where start_week is not null
 order by start_week desc, proj_id
 -- where proj_id = '20687'
 -- order by start_week desc, proj_id 
