@@ -116,6 +116,44 @@ with grading_metrics as (
 select
     *
     ,CASE
+        WHEN metric_name = 'hard_constraints' THEN 7
+        WHEN metric_name = 'soft_constraints' THEN 8
+        WHEN metric_name = 'invalid_dates' THEN 9
+        WHEN metric_name = 'high_float' THEN 2
+        WHEN metric_name = 'total_float_days' THEN 14
+        WHEN metric_name = 'tfci' THEN 13
+        WHEN metric_name = 'cpli' THEN 12
+        WHEN metric_name = 'missing_logic' THEN 3
+        WHEN metric_name = 'fs_relationships' THEN 4
+        WHEN metric_name = 'lags' THEN 5
+        WHEN metric_name = 'leads' THEN 6
+        WHEN metric_name = 'out_of_sequence' THEN 10
+        WHEN metric_name = 'resource_look_ahead' THEN 15
+        WHEN metric_name = 'bei' THEN 11
+        WHEN metric_name = 'missed_activities' THEN 16
+        WHEN metric_name = 'long_duration' THEN 1
+        ELSE NULL
+    END AS metric_order
+        ,CASE
+        WHEN metric_name = 'long_duration' THEN 'architecture'
+        WHEN metric_name = 'high_float' THEN 'architecture'
+        WHEN metric_name = 'missing_logic' THEN 'architecture'
+        WHEN metric_name = 'fs_relationships' THEN 'architecture'
+        WHEN metric_name = 'lags' THEN 'architecture'
+        WHEN metric_name = 'leads' THEN 'architecture'
+        WHEN metric_name = 'hard_constraints' THEN 'architecture'
+        WHEN metric_name = 'soft_constraints' THEN 'architecture'
+        WHEN metric_name = 'invalid_dates' THEN 'architecture'
+        WHEN metric_name = 'out_of_sequence' THEN 'architecture'
+        WHEN metric_name = 'bei' THEN 'performance'
+        WHEN metric_name = 'cpli' THEN 'performance'
+        WHEN metric_name = 'tfci' THEN 'performance'
+        WHEN metric_name = 'total_float_days' THEN 'performance'
+        WHEN metric_name = 'resource_look_ahead' THEN 'performance'
+        WHEN metric_name = 'missed_activities' THEN 'performance'
+        ELSE NULL
+    END AS metric_type
+    ,CASE
         WHEN metric_name = 'hard_constraints' THEN 'Hard Constraints (#)'
         WHEN metric_name = 'soft_constraints' THEN 'Soft Constraints (%)'
         WHEN metric_name = 'invalid_dates' THEN 'Invalid Dates (#)'
