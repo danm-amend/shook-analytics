@@ -19,7 +19,7 @@ with grading_metrics as (
         b.tfci_grade,
         b.cpli,
         b.cpli_grade,
-        c.missing_logic_pct,
+        c.total_missing_logic_cnt,
         c.missing_logic_grade,
         d.fs_pct,
         d.fs_grade,
@@ -85,7 +85,7 @@ with grading_metrics as (
     union all select proj_id, proj_name, start_week, 'cpli', cpli, cpli_grade
     from grading_metrics
     
-    union all select proj_id, proj_name, start_week, 'missing_logic', missing_logic_pct, missing_logic_grade
+    union all select proj_id, proj_name, start_week, 'missing_logic', total_missing_logic_cnt, missing_logic_grade
     from grading_metrics
     
     union all select proj_id, proj_name, start_week, 'fs_relationships', fs_pct, fs_grade
@@ -161,7 +161,7 @@ select
         WHEN metric_name = 'total_float_days' THEN 'Total Float Days (#)'
         WHEN metric_name = 'tfci' THEN 'Total Float Consumption Index (TFCI)'
         WHEN metric_name = 'cpli' THEN 'Critical Path Length Index (CPLI)'
-        WHEN metric_name = 'missing_logic' THEN 'Missing Logic (%)'
+        WHEN metric_name = 'missing_logic' THEN 'Missing Logic (#)'
         WHEN metric_name = 'fs_relationships' THEN 'FS Relationship (%)'
         WHEN metric_name = 'lags' THEN 'Lags (%)'
         WHEN metric_name = 'leads' THEN 'Leads (%)'
