@@ -43,7 +43,7 @@ with
             start_week,
             num_hard_consts,
             case
-                when num_hard_consts < 1 then 'A'
+                when num_hard_consts <= 1 then 'A'
                 else 'F' 
             end as hard_consts_grade, 
             num_soft_consts,
