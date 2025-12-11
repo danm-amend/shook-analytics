@@ -11,7 +11,7 @@ with projs as (
     , b.*
     FROM projs as a
     left join 
-    {{ source('P6', 'TASK') }} as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.proj_id = b.proj_id  
     -- where 1=1 
     -- and b.act_end_date is null 

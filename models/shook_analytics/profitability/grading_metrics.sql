@@ -115,22 +115,22 @@ with grading_metrics as (
     select
         *
         ,CASE
-            WHEN metric_name = 'hard_constraints' THEN 7
-            WHEN metric_name = 'soft_constraints' THEN 8
-            WHEN metric_name = 'invalid_dates' THEN 9
+            WHEN metric_name = 'long_duration' THEN 1
             WHEN metric_name = 'high_float' THEN 2
-            WHEN metric_name = 'total_float_days' THEN 14
-            WHEN metric_name = 'tfci' THEN 13
-            WHEN metric_name = 'cpli' THEN 12
             WHEN metric_name = 'missing_logic' THEN 3
             WHEN metric_name = 'fs_relationships' THEN 4
             WHEN metric_name = 'lags' THEN 5
             WHEN metric_name = 'leads' THEN 6
+            WHEN metric_name = 'hard_constraints' THEN 7
+            WHEN metric_name = 'soft_constraints' THEN 8
+            WHEN metric_name = 'invalid_dates' THEN 9
             WHEN metric_name = 'out_of_sequence' THEN 10
-            WHEN metric_name = 'resource_look_ahead' THEN 15
             WHEN metric_name = 'bei' THEN 11
+            WHEN metric_name = 'cpli' THEN 12
+            WHEN metric_name = 'tfci' THEN 13
+            WHEN metric_name = 'total_float_days' THEN 14
+            WHEN metric_name = 'resource_look_ahead' THEN 15
             WHEN metric_name = 'missed_activities' THEN 16
-            WHEN metric_name = 'long_duration' THEN 1
             ELSE NULL
         END AS metric_order
             ,CASE
@@ -153,22 +153,22 @@ with grading_metrics as (
             ELSE NULL
         END AS metric_type
         ,CASE
-            WHEN metric_name = 'hard_constraints' THEN 'Hard Constraints (#)'
-            WHEN metric_name = 'soft_constraints' THEN 'Soft Constraints (%)'
-            WHEN metric_name = 'invalid_dates' THEN 'Invalid Dates (#)'
+            WHEN metric_name = 'long_duration' THEN 'Long Duration (%)'
             WHEN metric_name = 'high_float' THEN 'High Float (%)'
-            WHEN metric_name = 'total_float_days' THEN 'Total Float Days (#)'
-            WHEN metric_name = 'tfci' THEN 'Total Float Consumption Index (TFCI)'
-            WHEN metric_name = 'cpli' THEN 'Critical Path Length Index (CPLI)'
             WHEN metric_name = 'missing_logic' THEN 'Missing Logic (#)'
             WHEN metric_name = 'fs_relationships' THEN 'FS Relationship (%)'
             WHEN metric_name = 'lags' THEN 'Lags (%)'
             WHEN metric_name = 'leads' THEN 'Leads (%)'
+            WHEN metric_name = 'hard_constraints' THEN 'Hard Constraints (#)'
+            WHEN metric_name = 'soft_constraints' THEN 'Soft Constraints (%)'
+            WHEN metric_name = 'invalid_dates' THEN 'Invalid Dates (#)'
             WHEN metric_name = 'out_of_sequence' THEN 'Out of Sequence Activities (%)'
-            WHEN metric_name = 'resource_look_ahead' THEN 'Resource Lookahead (%)'
             WHEN metric_name = 'bei' THEN 'Baseline Execution Index (BEI)'
+            WHEN metric_name = 'cpli' THEN 'Critical Path Length Index (CPLI)'
+            WHEN metric_name = 'tfci' THEN 'Total Float Consumption Index (TFCI)'
+            WHEN metric_name = 'total_float_days' THEN 'Total Float Days (#)'
+            WHEN metric_name = 'resource_look_ahead' THEN 'Resource Lookahead (%)'
             WHEN metric_name = 'missed_activities' THEN 'Missed Activities (%)'
-            WHEN metric_name = 'long_duration' THEN 'Long Duration (%)'
             ELSE NULL
         END AS metric_full_name
         ,CASE
