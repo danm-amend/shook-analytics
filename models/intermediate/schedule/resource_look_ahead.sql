@@ -9,7 +9,7 @@ with projs as (
     select 
         distinct start_week, proj_id as p6_proj_id 
     from 
-        {{ source('P6', 'TASK')}}
+        {{ ref('omit_from_grading_tasks') }}
 ), proj_start_weeks as (
     select 
         *

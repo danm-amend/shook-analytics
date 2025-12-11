@@ -23,7 +23,7 @@ with projs as (
     , b.proj_id, b.task_code, b.task_id, target_drtn_hr_cnt
     FROM calendar as a
     left join 
-    {{ source('P6', 'TASK') }} as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.proj_id = b.proj_id  
     -- WHERE B.start_week = (select max(START_WEEK) from {{ ref('latest_date') }}) 
     where act_end_date is null
@@ -43,7 +43,7 @@ with projs as (
         baseline as b 
     on a.proj_id = b.orig_proj_id 
     left join 
-        {{ source('P6', 'TASK') }} as c 
+        {{ ref('omit_from_grading_tasks') }} as c 
     on b.proj_id = c.proj_id and a.task_code = c.task_code
 ), proj_agg as (
     select 

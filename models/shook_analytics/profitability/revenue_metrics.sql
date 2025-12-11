@@ -96,7 +96,7 @@ with gl_actuals as (
         revenue - direct_cost - indirect_cost as margin
     from gl_budget
     where mth_year = year(current_date) and budget_type = 'FC'
-    qualify fc_number = max(fc_number) over ()
+    --qualify fc_number = max(fc_number) over ()
 ), rolling_fc as (
     select
         DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,

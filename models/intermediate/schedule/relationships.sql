@@ -10,7 +10,7 @@ with projs as (
     , b.*
     FROM projs as a
     left join 
-    {{ source('P6', 'TASK') }} as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.proj_id = b.proj_id  
 ), relations as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, b.pred_task_id, b.pred_type, task_pred_id as relationship_id

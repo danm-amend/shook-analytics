@@ -28,7 +28,7 @@ with projs as (
         sum(iff(act_end_date is not null, 1, 0)) as actual_complete
     from proj_baseline as a 
     left join 
-    {{source('P6', 'TASK')}} as b
+    {{ ref('omit_from_grading_tasks') }} as b
     using(proj_id)
     -- where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
     group by a.PROJ_ID, b.start_week
@@ -42,7 +42,7 @@ with projs as (
         , sum(iff(b.target_end_date <= b.start_week, 1, 0)) as baseline_complete
     from proj_baseline as a 
     left join 
-    {{source('P6', 'TASK')}} as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.baseline_proj_id = b.proj_id
     -- where a.proj_id = '21837'
     -- where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})
@@ -78,10 +78,10 @@ with projs as (
     from 
         both_counts as a 
     left join 
-        {{source('P6', 'TASK')}} as b
+        {{ ref('omit_from_grading_tasks') }} as b
     using(proj_id, start_week)
     left join 
-        {{source('P6', 'TASK')}} as c
+        {{ ref('omit_from_grading_tasks') }} as c
     on a.baseline_proj_id = c.proj_id and b.task_code = c.task_code and a.start_week = c.start_week
     -- where b.start_week = (select max(START_WEEK) from {{ ref('latest_date') }}) 
     -- and c.start_week = (select max(START_WEEK) from {{ ref('latest_date') }})

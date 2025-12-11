@@ -7,9 +7,8 @@ with
     task_proj as (
         select p6_full_project_name, last_recalc_date, b.*
         from projs as a
-        left join {{ source('P6', 'TASK') }} as b on a.proj_id = b.proj_id
-    ),
-    consts as (
+        left join {{ ref('omit_from_grading_tasks') }} as b on a.proj_id = b.proj_id
+    ),consts as (
         select
             proj_id,
             p6_full_project_name as proj_name,

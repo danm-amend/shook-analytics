@@ -59,6 +59,7 @@ sources:
       - name: PROJWBS
       - name: P6_WEEKLY_SUBTOTALS
       - name: TASKPRED
+      - name: TASKACTV
   - name: unanet
     database: shookdw
     schema: unanet

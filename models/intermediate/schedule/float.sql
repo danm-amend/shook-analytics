@@ -15,7 +15,7 @@ with projs as (
     , b.*
     FROM calendar as a
     left join 
-    {{ source('P6', 'TASK') }} as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.proj_id = b.proj_id  
 ), floats as ( 
     select 
@@ -58,7 +58,7 @@ with projs as (
                         , t1.task_type
                         , pw.wbs_name
     from					float_fields as t0
-    LEFT JOIN               {{ source('P6', 'TASK') }} as t1
+    LEFT JOIN               {{ ref('omit_from_grading_tasks') }} as t1
     ON                      t0.proj_id = t1.proj_id
     AND                     t1.START_WEEK = t0.start_week
     left join 
