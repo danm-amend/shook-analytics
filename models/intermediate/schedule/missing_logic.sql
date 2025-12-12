@@ -10,7 +10,7 @@ with projs as (
     , b.*
     FROM projs as a
     left join 
-    {{ ref('omit_from_grading_tasks') }}as b 
+    {{ ref('omit_from_grading_tasks') }} as b 
     on a.proj_id = b.proj_id  
 ), pred_task as (
     select a.PROJ_Id, a.TASK_ID, a.task_name, a.P6_FULL_PROJECT_NAME, START_WEEK, a.Task_type, count(distinct pred_task_id) as num_pred_tasks
