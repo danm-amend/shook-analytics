@@ -24,7 +24,8 @@ with open_opps as (
         
     from 
         {{ ref("stg_opportunities") }}
-    where stage_type in ('Open', 'Pending')
+    -- where stage_type not in ('Open', 'Pending') 
+    where stage_type like 'Closed%'
     and delete_record = false
 )
 
