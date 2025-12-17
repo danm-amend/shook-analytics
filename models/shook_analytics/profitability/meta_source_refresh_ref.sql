@@ -42,8 +42,8 @@ with new_sales as (
     select 
         'KPA' as data_source,
         injury_date as data_month_ref,
-        first_load_dt,
-        last_load_dt
+        convert_timezone('America/Los_Angeles', 'America/New_York', first_load_dt) AS first_load_dt,
+        convert_timezone('America/Los_Angeles', 'America/New_York', last_load_dt) AS last_load_dt
     from 
         {{ ref('osha_recordable_incidents') }}
     CROSS JOIN 
@@ -51,35 +51,47 @@ with new_sales as (
         select min(last_load_dt) as first_load_dt, max(last_load_dt) as last_load_dt from {{ source('metadata', 'kpa_refresh_log') }} where success = true
     )
     qualify row_number() over (partition by null order by injury_date desc) = 1
-), gl_actuals as (
-
-    SELECT TABLE_NAME, LAST_ALTERED
-    FROM shookdw.INFORMATION_SCHEMA.TABLES
-    WHERE TABLE_SCHEMA = 'VIEWPOINT'
-    and table_name in ('GLPI', 'GLAC', 'GLAS', 'BJCDM')
 ), gl_actuals_refresh as (
     select 
-        'GL Actuals' as data_source,
-        LAST_ALTERED as data_date_ref,
-        null as first_load_dt,
-        LAST_ALTERED as last_load_dt
+        last_altered
     from 
-        gl_actuals
-    qualify row_number() over (partition by null order by LAST_ALTERED asc) = 1
-), gl_budget as (
-    SELECT TABLE_NAME, LAST_ALTERED
-    FROM shookdw.INFORMATION_SCHEMA.TABLES
-    WHERE TABLE_SCHEMA = 'VIEWPOINT'
-    and table_name in ('GLAC', 'GLBD', 'BJCDM', 'GLBC')
+        shookdw.information_schema.tables
+    where 
+        table_schema = 'VIEWPOINT'
+        and table_name = 'GLAS'
+), gl_actuals as (
+    select 
+        'GL Actuals' as data_source,
+        date(max(actual_date)) as data_date_ref,
+        null as first_load_dt,
+        convert_timezone('America/Los_Angeles', 'America/New_York', max(b.last_altered)) as last_load_dt
+    from intermediate.finances.actual_cost as a 
+    CROSS JOIN 
+    gl_actuals_refresh AS b
+    where date(mth) = to_char(current_date, 'YYYY-MM-01') 
+), gl_budget_max_fc as (
+    select max(fc_number) as max_fc_number from {{ ref('gl_budget') }} where budget_year = year(current_timestamp())
 ), gl_budget_refresh as (
     select 
-        'GL Budget' as data_source,
-        LAST_ALTERED as data_date_ref,
-        null as first_load_dt,
-        LAST_ALTERED as last_load_dt
+        last_altered
     from 
-        gl_budget
-    qualify row_number() over (partition by null order by LAST_ALTERED asc) = 1
+        shookdw.information_schema.tables
+    where 
+        table_schema = 'VIEWPOINT'
+        and table_name = 'GLBD'
+), gl_budget as (
+    select 
+        'GL Budget' as data_source,
+        min(MTH) as data_date_ref,
+        null as first_load_dt,
+        convert_timezone('America/Los_Angeles', 'America/New_York', max(c.last_altered)) as last_load_dt
+    from 
+        {{ ref('gl_budget') }} as a 
+    join gl_budget_max_fc as b
+    on a.fc_number = b.max_fc_number
+    cross join 
+    gl_budget_refresh as c 
+    where budget_year = year(current_timestamp()) and budget_type = 'FC'
 )
 , metric_union as (
     select * from new_sales
@@ -92,14 +104,19 @@ with new_sales as (
     union all 
     select * from kpa
     union all 
-    select * from gl_actuals_refresh
+    select * from gl_actuals
     union all 
-    select * from gl_budget_refresh
+    select * from gl_budget
+    union all 
+    select 'power_bi_refresh' as data_source
+    , convert_timezone('America/Los_Angeles', 'America/New_York', current_timestamp()) as data_date_ref
+    , null as first_load_dt
+    , convert_timezone('America/Los_Angeles', 'America/New_York', current_timestamp()) as last_load_dt
 ), metric_union_clean as (
     select 
         data_source,
-        date(convert_timezone('America/Los_Angeles', 'America/New_York', data_date_ref)) as data_date_ref,
-        convert_timezone('America/Los_Angeles', 'America/New_York', last_load_dt) as last_load_dt
+        data_date_ref,
+        last_load_dt
     from metric_union
 )
 
