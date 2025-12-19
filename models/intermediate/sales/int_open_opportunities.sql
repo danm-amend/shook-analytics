@@ -9,8 +9,8 @@ with open_opps as (
         probability,
         stage,
         stage_type,
-        replace(replace(next_action, '<p>', ''), '</p>', '') as next_action,
-        replace(replace(note, '<p>', ''), '</p>', '') as note,
+        regexp_replace(regexp_replace(next_action, '<[^>]+>', ''), '&nbsp;', '') as next_action,
+        regexp_replace(regexp_replace(note, '<[^>]+>', ''), '&nbsp;', '') as note,
         opportunity_number,
         address1,
         city,
@@ -26,6 +26,16 @@ with open_opps as (
         {{ ref("stg_opportunities") }}
     where stage_type in ('Open', 'Pending')
     and delete_record = false
+), region_market as (
+    select 
+        a.*,
+        b."Market Channels" as market_channel,
+        b."Office Division" as office_division
+    from 
+        open_opps as a 
+    left join 
+        {{ source('unanet', 'opportunity_export') }} as b 
+    on trim(opportunity_number) = trim("Opp Number")
 )
 
-select * from open_opps
+select * from region_market
