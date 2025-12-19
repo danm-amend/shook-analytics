@@ -1,4 +1,4 @@
-with open_opps as (
+with closed_opps as (
     select 
         opportunity_id,
         client_id,
@@ -27,6 +27,16 @@ with open_opps as (
     -- where stage_type not in ('Open', 'Pending') 
     where stage_type like 'Closed%'
     and delete_record = false
+), region_market as (
+    select 
+        a.*,
+        b."Market Channels" as market_channel,
+        b."Office Division" as office_division
+    from 
+        closed_opps as a 
+    left join 
+        {{ source('unanet', 'opportunity_export') }} as b 
+    on trim(opportunity_number) = trim("Opp Number")
 )
 
-select * from open_opps
+select * from region_market

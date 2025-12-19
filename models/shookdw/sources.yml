@@ -65,5 +65,8 @@ sources:
     schema: unanet
     tables:
       - name: opportunities_v1
-
+      - name: offices
+      - name: opportunity_office
+      - name: office_divisions
+      - name: opportunity_export
       
