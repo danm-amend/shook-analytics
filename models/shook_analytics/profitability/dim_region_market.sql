@@ -1,32 +1,46 @@
-WITH
-department_base AS (
-    SELECT DISTINCT
-        region_market_clean,
-        region_clean,
-        market_clean
-    FROM
-        {{ ref('gl_actuals') }}
-), region_market_numbers AS (
-    SELECT
-        *,
-        CASE
-            WHEN region_clean = 'Great Lakes' THEN '04'
-            WHEN region_clean = 'Central' THEN '06'
-            WHEN region_clean = 'Mid-Atlantic' THEN '08'
-            WHEN region_clean = 'Midwest' THEN '12'
-            --ELSE 'Other'
-        END AS region_number,
-        CASE
-            WHEN market_clean = 'Water' THEN '10'
-            WHEN market_clean = 'Education' THEN '20'
-            WHEN market_clean = 'Healthcare' THEN '30'
-            WHEN market_clean = 'Industrial' THEN '40'
-            --ELSE 'Other'
-        END AS market_number
-    FROM department_base
-)
-SELECT 
-    *,
-    concat(region_number, market_number) as department_number
-FROM 
-    region_market_numbers
+with
+    departments_base as (
+        select
+            *
+            ,replace(description, 'Region - ', '') as sub_desc
+        from
+            shookdw.viewpoint.bjcdm
+        where 
+            description like 'Region%'
+    ),
+    departments_parsed as (
+        select
+            *
+            ,case
+                when sub_desc like 'Great Lakes%' then 'Great Lakes'
+                else split(sub_desc, ' ')[0]::string
+            end as region
+            ,case
+                when sub_desc like 'Great Lakes%' then split(sub_desc, ' ')[2]::string
+                else split(sub_desc, ' ')[1]::string
+            end as market_abbr
+            --split(replace(description, 'Region - ', ''), ' ')[1] as market
+        from
+            departments_base
+    ),
+    departments_final as (
+        select
+            department
+            ,substring(department, 1, 2) as region_number
+            ,substring(department, 3, 4) as market_number
+            ,description
+            ,region
+            , case
+                when market_abbr like 'ED%' then 'EDU'
+                else market_abbr
+            end as market_abbr
+            ,case
+                when market_abbr like 'ED%' then 'Education'
+                when market_abbr like 'HC%' then 'Healthcare'
+                when market_abbr like 'IND%' then 'Industrial'
+                when market_abbr like 'Water' then 'Water'
+            end as market
+        from departments_parsed
+    )
+select *
+from departments_final
