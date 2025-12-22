@@ -1,8 +1,8 @@
--- deprecated
-{% macro union_wip_dynamic(control_table, db_name, schema_name) %}
+{% macro union_tables_dynamic(control_table, db_name, schema_name) %}
     {% set control_query %}
         select table_name, file_month_year
         from {{ control_table }}
+        where active = TRUE
         order by table_name
     {% endset %}
 

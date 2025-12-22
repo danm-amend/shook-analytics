@@ -1,3 +1,4 @@
+-- deprecated
 {% macro union_pending_backlog_dynamic(control_table, db_name, schema_name) %}
     {% set table_names = dbt_utils.get_column_values(table=control_table, column='table_name') %}
     

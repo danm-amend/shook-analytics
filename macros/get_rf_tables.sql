@@ -1,3 +1,4 @@
+-- deprecated
 {% macro get_rf_tables() %}
     {% set sql %}
         WITH

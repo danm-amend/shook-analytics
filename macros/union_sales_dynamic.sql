@@ -1,3 +1,5 @@
+-- replace with union_tables_dynamic 
+-- need to create a table to determine which columns are to be used
 {% macro union_sales_dynamic(control_table, db_name, schema_name) %}
     {% set table_names = dbt_utils.get_column_values(table=control_table, column='table_name') %}
     

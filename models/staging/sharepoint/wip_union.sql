@@ -1,5 +1,5 @@
 with union_sales as (
-    {{ union_wip_dynamic(source('metadata', 'wip_file_control'), 'shookdw', 'sharepoint') }}
+    {{ union_tables_dynamic(source('metadata', 'wip_file_control'), 'shookdw', 'sharepoint') }}
 )
 
 select 
