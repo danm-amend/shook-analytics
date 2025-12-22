@@ -1,7 +1,7 @@
-with union_sales as (
-    {{ union_wip_dynamic(source('metadata', 'wip_file_control'), 'shookdw', 'sharepoint') }}
+with union_wip as (
+    {{ union_tables_dynamic(source('metadata', 'wip_file_control'), 'shookdw', 'sharepoint') }}
 )
 
 select 
     *
-from union_sales
+from union_wip

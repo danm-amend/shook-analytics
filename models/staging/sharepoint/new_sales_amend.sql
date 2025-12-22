@@ -5,7 +5,6 @@ with union_sales as (
         {{first_of_month('"Month"')}} as month_date,
         source_table,
         "Region" as region,
-
         "Market Channel" as market_channel,
         "Title" as project,
         CASE

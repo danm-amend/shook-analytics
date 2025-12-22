@@ -1,3 +1,4 @@
+-- deprecated
 {% macro get_active_rf_table() %}
   {% set sql %}
     select table_name
