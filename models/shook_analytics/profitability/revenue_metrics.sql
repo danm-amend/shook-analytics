@@ -99,7 +99,8 @@ with gl_actuals as (
     --qualify fc_number = max(fc_number) over ()
 ), rolling_fc as (
     select
-        DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,
+        -- DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,
+        file_month_year as mth,
         --forecast_type as rev_type,
         replace(forecast_type, ' Rolling Forecast', ' RF') as rev_type,
         round(sum(revenue), 2) as revenue,
@@ -108,7 +109,7 @@ with gl_actuals as (
         round(sum(margin), 2) as margin
     from 
         {{ ref('current_rolling_forecast') }}
-    group by forecast_type
+    group by forecast_type, mth
 )
 , union_metrics as (
     select * from two_years_prior
