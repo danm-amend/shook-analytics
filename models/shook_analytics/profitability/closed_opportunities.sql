@@ -6,7 +6,8 @@ with opps as (
             else false 
         end as opportunity_won 
     from 
-        {{ ref('int_closed_opportunities')}}
+        {{ ref('int_opportunities')}}
+    where stage_type like 'Closed%'
 )
 
 select * from opps
