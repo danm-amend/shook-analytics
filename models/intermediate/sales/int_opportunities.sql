@@ -1,4 +1,4 @@
-with closed_opps as (
+with open_opps as (
     select 
         opportunity_id,
         client_id,
@@ -9,8 +9,8 @@ with closed_opps as (
         probability,
         stage,
         stage_type,
-        replace(replace(next_action, '<p>', ''), '</p>', '') as next_action,
-        replace(replace(note, '<p>', ''), '</p>', '') as note,
+        regexp_replace(regexp_replace(next_action, '<[^>]+>', ''), '&nbsp;', '') as next_action,
+        regexp_replace(regexp_replace(note, '<[^>]+>', ''), '&nbsp;', '') as note,
         opportunity_number,
         address1,
         city,
@@ -24,19 +24,23 @@ with closed_opps as (
         
     from 
         {{ ref("stg_opportunities") }}
-    -- where stage_type not in ('Open', 'Pending') 
-    where stage_type like 'Closed%'
-    and delete_record = false
+    where delete_record = false
 ), region_market as (
     select 
         a.*,
         b."Market Channels" as market_channel,
         b."Office Division" as office_division
     from 
-        closed_opps as a 
+        open_opps as a 
     left join 
         {{ source('unanet', 'opportunity_export') }} as b 
     on trim(opportunity_number) = trim("Opp Number")
+), most_recent as (
+    select  
+        *
+    from 
+        region_market
+    qualify row_number() over (partition by opportunity_number order by last_modified_date_time desc) = 1
 )
 
-select * from region_market
+select * from most_recent
