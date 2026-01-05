@@ -69,4 +69,8 @@ sources:
       - name: opportunity_office
       - name: office_divisions
       - name: opportunity_export
-      
+      - name: opportunity_practicearea
+      - name: opportunity_size
+      - name: opportunity_uom
+      - name: opportunity_debrief_call_complete
+      - name: practiceareas
