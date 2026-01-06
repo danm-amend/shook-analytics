@@ -1,7 +1,6 @@
 with raw_opps as (
     select 
         *
-        
     from 
         {{ ref("stg_opportunities") }}
     where delete_record = false
@@ -18,10 +17,13 @@ with raw_opps as (
     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
 ), opp_practice_area as (
     select 
-        *
+        opportunity_id, last_load_dt
+        , listagg(practice_area_name, ', ') within group (order by practice_area_name) as practice_area_name
     from 
         {{ ref('stg_opportunity_practicearea') }}
+    group by opportunity_id, last_load_dt
     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
+
 ), opp_office_division as (
     select 
         * 
@@ -34,7 +36,8 @@ with raw_opps as (
     from 
         {{ ref('stg_opportunity_debrief_call_complete') }}
     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
-), opps as (
+)
+, opps as (
     select 
         a.*,
         b.estimated_project_size,
@@ -90,5 +93,5 @@ with raw_opps as (
     from opps
 )
 
-select * 
+select *
 from opps_cols
