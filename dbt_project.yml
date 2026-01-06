@@ -42,6 +42,10 @@ models:
         +materialized: view
         +database: staging
         +schema: kpa
+      unanet:
+        +materialized: view
+        +database: staging
+        +schema: unanet
     shook_analytics:
       profitability:
         +materialized: view
