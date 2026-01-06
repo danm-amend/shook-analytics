@@ -99,7 +99,7 @@ WITH
     ),
     add_pl_context AS (
         SELECT
-            *
+            a.*
             ,CASE 
                 WHEN glacct like '41010%' or glacct like '41020%' or glacct like '41030%' then 'construction_revenue'
                 WHEN glacct like '5%' then 'direct_construction_cost'
@@ -115,20 +115,26 @@ WITH
                     (cast(glco as int) < 71 or cast(glco as int) > 104) then 1
                 ELSE 0
             END AS include_company
-            ,CASE
-                WHEN account_division_number >= 1200 and account_division_number <= 1240 then 'Midwest'
-                WHEN account_division_number >= 400 and account_division_number <= 440 then 'Great Lakes'
-                WHEN account_division_number >= 800 and account_division_number <= 840 then 'Mid-Atlantic'
-                WHEN account_division_number >= 600 and account_division_number <= 640 then 'Central'
-            END AS region
-            ,CASE
-                WHEN account_division in ('0410','0610','0810','1210') then 'Water'
-                WHEN account_division in ('0430','0630','0830','1230') then 'Healthcare'
-                WHEN account_division in ('0440','0640','0840','1240') then 'Industrial'
-                WHEN account_division in ('0420','0620','0820','1220') then 'Education'
-            END AS market
-        FROM add_context_to_gl
-    ), use_indirect_cost as (
+            -- ,CASE
+            --     WHEN account_division_number >= 1200 and account_division_number <= 1240 then 'Midwest'
+            --     WHEN account_division_number >= 400 and account_division_number <= 440 then 'Great Lakes'
+            --     WHEN account_division_number >= 800 and account_division_number <= 840 then 'Mid-Atlantic'
+            --     WHEN account_division_number >= 600 and account_division_number <= 640 then 'Central'
+            -- END AS region
+            -- ,CASE
+            --     WHEN account_division in ('0410','0610','0810','1210') then 'Water'
+            --     WHEN account_division in ('0430','0630','0830','1230') then 'Healthcare'
+            --     WHEN account_division in ('0440','0640','0840','1240') then 'Industrial'
+            --     WHEN account_division in ('0420','0620','0820','1220') then 'Education'
+            -- END AS market
+            , b.region
+            , b.market
+        FROM add_context_to_gl as a 
+        left join 
+        {{ ref('dim_region_market') }} as b 
+        on a.account_division = b.department
+    )
+    , use_indirect_cost as (
         select 
             *,
             CASE
