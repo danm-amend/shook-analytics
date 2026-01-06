@@ -3,7 +3,7 @@ with new_sales as (
         *
     from 
         {{ ref('new_sales') }}
-    where year(month_date) = year(current_timestamp())
+    -- where year(month_date) = year(current_timestamp())
 )
 
 select * from new_sales
