@@ -24,11 +24,11 @@ with gl_actuals as (
     where include_company = 1
     and mth_year >= 2023
     group by mth, budget_type, budget_name, fc_number, mth_year
-), two_years_prior as (
+), actuals_metric as (
     select 
         mth, 
-        --to_varchar(year(dateadd(year, -2, current_date))) || ' Metrics' as rev_type,
-        to_varchar(year(dateadd(year, -2, current_date))) as rev_type,
+        'gl_actuals' as rev_type,
+        -- to_varchar(year(dateadd(year, -2, current_date))) as rev_type,
         -- region, 
         -- market,
         revenue,
@@ -36,33 +36,47 @@ with gl_actuals as (
         indirect_cost,
         revenue - direct_cost - indirect_cost as margin
     from gl_actuals 
-    where year(mth) = year(dateadd(year, -2, current_date))
-), one_years_prior as (
-    select 
-        mth, 
-        --to_varchar(year(dateadd(year, -1, current_date))) || ' Metrics' as rev_type,
-        to_varchar(year(dateadd(year, -1, current_date))) as rev_type,
-        -- region, 
-        -- market,
-        revenue,
-        direct_cost,
-        indirect_cost,
-        revenue - direct_cost - indirect_cost as margin
-    from gl_actuals 
-    where year(mth) = year(dateadd(year, -1, current_date))
-), current_ytd as (
-    select 
-        mth, 
-        to_varchar(year(current_date)) || ' YTD' as rev_type,
-        -- region, 
-        -- market,
-        revenue,
-        direct_cost,
-        indirect_cost,
-        revenue - direct_cost - indirect_cost as margin
-    from gl_actuals 
-    where year(mth) = year( current_date)
+    -- where year(mth) = year(dateadd(year, -2, current_date))    
 )
+-- , two_years_prior as (
+--     select 
+--         mth, 
+--         --to_varchar(year(dateadd(year, -2, current_date))) || ' Metrics' as rev_type,
+--         to_varchar(year(dateadd(year, -2, current_date))) as rev_type,
+--         -- region, 
+--         -- market,
+--         revenue,
+--         direct_cost,
+--         indirect_cost,
+--         revenue - direct_cost - indirect_cost as margin
+--     from gl_actuals 
+--     where year(mth) = year(dateadd(year, -2, current_date))
+-- ), one_years_prior as (
+--     select 
+--         mth, 
+--         --to_varchar(year(dateadd(year, -1, current_date))) || ' Metrics' as rev_type,
+--         to_varchar(year(dateadd(year, -1, current_date))) as rev_type,
+--         -- region, 
+--         -- market,
+--         revenue,
+--         direct_cost,
+--         indirect_cost,
+--         revenue - direct_cost - indirect_cost as margin
+--     from gl_actuals 
+--     where year(mth) = year(dateadd(year, -1, current_date))
+-- ), current_ytd as (
+--     select 
+--         mth, 
+--         to_varchar(year(current_date)) || ' YTD' as rev_type,
+--         -- region, 
+--         -- market,
+--         revenue,
+--         direct_cost,
+--         indirect_cost,
+--         revenue - direct_cost - indirect_cost as margin
+--     from gl_actuals 
+--     where year(mth) = year( current_date)
+-- )
 , current_plan as (
     select 
         mth,
@@ -112,12 +126,14 @@ with gl_actuals as (
     group by forecast_type, mth
 )
 , union_metrics as (
-    select * from two_years_prior
-    union all 
-    select * from one_years_prior
-    union all 
-    select * from current_ytd
-    union all 
+    -- select * from two_years_prior
+    -- union all 
+    -- select * from one_years_prior
+    -- union all 
+    -- select * from current_ytd
+    -- union all 
+    select * from actuals_metric
+    union all
     select * from current_plan
     union all 
     select * from next_year_plan
@@ -128,4 +144,4 @@ with gl_actuals as (
 )
 
 select * from union_metrics
-
+order by mth desc
