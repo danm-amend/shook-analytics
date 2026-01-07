@@ -117,14 +117,17 @@ with gl_actuals as (
         -- DATE_TRUNC('MONTH', CURRENT_DATE) AS mth,
         file_month_year as mth,
         --forecast_type as rev_type,
-        replace(forecast_type, ' Rolling Forecast', ' RF') as rev_type,
-        round(sum(revenue), 2) as revenue,
+        -- replace(forecast_type, ' Rolling Forecast', ' RF') as rev_type,
+        'Rolling Forecast' as rev_type,
+        -- round(sum(revenue), 2) as revenue,
+        revenue,
         null as direct_cost,
         null as indirect_cost,
-        round(sum(margin), 2) as margin
+        margin
+        -- round(sum(margin), 2) as margin
     from 
         {{ ref('current_rolling_forecast') }}
-    group by forecast_type, mth
+    -- group by forecast_type, mth
 )
 , union_metrics as (
     select * from two_years_prior
@@ -145,4 +148,4 @@ with gl_actuals as (
 )
 
 select * from union_metrics
-order by mth desc
+order by rev_type, mth desc
