@@ -42,6 +42,10 @@ models:
         +materialized: view
         +database: staging
         +schema: kpa
+      sharepoint:
+        +materialized: view
+        +database: staging
+        +schema: sharepoint
       unanet:
         +materialized: view
         +database: staging
