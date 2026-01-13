@@ -39,7 +39,13 @@ with
                 when market_abbr like 'HC%' then 'Healthcare'
                 when market_abbr like 'IND%' then 'Industrial'
                 when market_abbr like 'Water' then 'Water'
-            end as market
+            end as market,
+            case 
+                when market_abbr like 'ED%' then 'Building'
+                when market_abbr like 'HC%' then 'Building'
+                when market_abbr like 'IND%' then 'Building'
+                when market_abbr like 'Water' then 'Water'
+            end as market_abstraction
         from departments_parsed
     ), unanet as (
         select 
@@ -82,6 +88,7 @@ select
     description,
     region,
     market_abbr,
-    market 
+    market,
+    market_abstraction
 from 
     unanet_ids
