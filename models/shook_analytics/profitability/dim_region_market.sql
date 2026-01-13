@@ -41,6 +41,47 @@ with
                 when market_abbr like 'Water' then 'Water'
             end as market
         from departments_parsed
+    ), unanet as (
+        select 
+            *
+        from 
+            {{ ref('dim_unanet_region_market') }}
+    ), unanet_region as (
+        select
+            distinct 
+            office_division_id, 
+            office_division_description
+        from 
+            unanet
+    ), unanet_market as (
+        select 
+            distinct 
+            practice_area_id, 
+            practice_area_name
+        from 
+            unanet
+    ), unanet_ids as (
+        select 
+            * 
+        from 
+            departments_final as a 
+        left join 
+            unanet_region as b 
+        on a.region = b.office_division_description 
+        left join 
+            unanet_market as c 
+        on a.market = c.practice_area_name
     )
-select *
-from departments_final
+
+select 
+    department,
+    region_number,
+    market_number,
+    office_division_id as unanet_region_id,
+    practice_area_id as unanet_market_id,
+    description,
+    region,
+    market_abbr,
+    market 
+from 
+    unanet_ids
