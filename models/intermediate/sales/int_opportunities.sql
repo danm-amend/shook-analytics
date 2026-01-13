@@ -18,9 +18,17 @@ with raw_opps as (
 ), opp_practice_area as (
     select 
         opportunity_id, last_load_dt
-        , listagg(practice_area_name, ', ') within group (order by practice_area_name) as practice_area_name
+        , listagg(distinct unanet_market_id, ', ') within group (order by unanet_market_id) as market_number
+        , listagg(distinct practice_area_name, ', ') within group (order by practice_area_name) as practice_area_name
     from 
-        {{ ref('stg_opportunity_practicearea') }}
+        {{ ref('stg_opportunity_practicearea') }} as a 
+    left join 
+        (
+            select distinct unanet_market_id, market_number
+            from 
+            {{ ref('dim_region_market') }} 
+        ) as b
+    on a.practice_area_id = b.unanet_market_id
     group by opportunity_id, last_load_dt
     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
 
@@ -28,8 +36,16 @@ with raw_opps as (
     select 
         * 
     from
-        {{ ref('stg_office_division') }}
-     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
+        {{ ref('stg_office_division') }} as a
+    left join 
+        (
+            select distinct unanet_region_id, region_number
+            from 
+            {{ ref('dim_region_market') }} 
+            where region_number not like '%9.%'
+        ) as b
+    on a.office_division_id = b.unanet_region_id
+    qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
 ), debrief_call_complete as (
     select 
         *
@@ -42,7 +58,9 @@ with raw_opps as (
         a.*,
         b.estimated_project_size,
         c.unit_of_measure,
+        d.market_number,
         d.practice_area_name,
+        e.region_number,
         e.office_division_description,
         f.debrief_call_complete
     from 
@@ -69,13 +87,14 @@ with raw_opps as (
         client_name, 
         opportunity_name, 
         cost,
-        -- size,
         coalesce(estimated_project_size, size) as size,
         unit_of_measure,
         probability,
         stage,
         stage_type,
+        market_number,
         practice_area_name as market_channel,
+        region_number,
         office_division_description as region,
         debrief_call_complete,
         regexp_replace(regexp_replace(next_action, '<[^>]+>', ''), '&nbsp;', '') as next_action,

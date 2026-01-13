@@ -1,7 +1,11 @@
 with region_market as (
     select distinct 
     office_division_id, office_division_description,
-    practice_area_id, practice_area_name
+    practice_area_id, 
+    case
+        when practice_area_name = 'Water Resources' then 'Water'
+        else practice_area_name
+    end as practice_area_name
     from {{ ref('stg_office_division') }}
     cross join 
     {{ ref('stg_practice_areas') }}
