@@ -70,7 +70,7 @@ with
         on a.region = b.office_division_description 
         left join 
             unanet_market as c 
-        on a.market = c.practice_area_name
+        on trim(a.market) = trim(c.practice_area_name)
     )
 
 select 
