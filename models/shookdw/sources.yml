@@ -74,3 +74,5 @@ sources:
       - name: opportunity_uom
       - name: opportunity_debrief_call_complete
       - name: practiceareas
+      - name: delivery_methods
+      - name: opportunity_delivery_method
