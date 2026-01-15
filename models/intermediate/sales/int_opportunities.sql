@@ -31,7 +31,14 @@ with raw_opps as (
     on a.practice_area_id = b.unanet_market_id
     group by opportunity_id, last_load_dt
     qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
-
+), opp_delivery_method as (
+    select 
+        opportunity_id, last_load_dt
+        , listagg(distinct delivery_method_name, ', ') within group (order by delivery_method_name) as delivery_method_name
+    from 
+        {{ ref('stg_opportunity_delivery_method') }}
+    group by opportunity_id, last_load_dt
+    qualify row_number() over (partition by opportunity_id order by last_load_dt desc) = 1
 ), opp_office_division as (
     select 
         * 
@@ -62,7 +69,8 @@ with raw_opps as (
         d.practice_area_name,
         e.region_number,
         e.office_division_description,
-        f.debrief_call_complete
+        f.debrief_call_complete,
+        g.delivery_method_name
     from 
         raw_opps as a 
     left join 
@@ -80,6 +88,9 @@ with raw_opps as (
     left join 
         debrief_call_complete as f 
     using(opportunity_id)
+    left join 
+        opp_delivery_method as g 
+    using(opportunity_id)
 ), opps_cols as (
     select 
         opportunity_id,
@@ -96,6 +107,7 @@ with raw_opps as (
         practice_area_name as market_channel,
         region_number,
         office_division_description as region,
+        delivery_method_name as delivery_method,
         debrief_call_complete,
         regexp_replace(regexp_replace(next_action, '<[^>]+>', ''), '&nbsp;', '') as next_action,
         regexp_replace(regexp_replace(note, '<[^>]+>', ''), '&nbsp;', '') as note,
