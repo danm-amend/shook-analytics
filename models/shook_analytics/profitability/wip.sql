@@ -8,7 +8,7 @@ WITH
             ,SUM("CumulativeActualCost") AS cumulative_actual_cost
             ,SUM("CumulativeProjected") AS cumulative_projected_cost
         FROM 
-            shook_analytics.profitability.job_cost_agg            
+            {{ ref('job_cost_agg') }}       
         GROUP BY
             "JCCO"
             ,"JOB"
@@ -21,7 +21,7 @@ WITH
             ,DATEFROMPARTS(YEAR(CAST("CHANGE_DATE" AS DATE)), MONTH(CAST("CHANGE_DATE" AS DATE)), 1) AS mth
             ,SUM("CONTRACT_AMT") AS contract_amt_change
         FROM
-            shook_analytics.profitability.contract_total_by_month
+            {{ ref('contract_total_by_month') }}
         GROUP BY
             "JCCO"
             ,"CONTRACT"
@@ -40,7 +40,7 @@ WITH
             ,NULLIF(SUM(ACTUALCOST),0) AS actual_cost
             ,NULLIF(SUM(CURRESTCOST),0) AS estimated_cost
         FROM 
-            shookdw.viewpoint.brvJCCostRevenueOverride
+            {{ source('shookdw', 'brvJCCostRevenueOverride') }}
         GROUP BY 
             "JCCO"
             ,"CONTRACT"
