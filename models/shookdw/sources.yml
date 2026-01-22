@@ -22,6 +22,7 @@ sources:
       - name: GLBD
       - name: GLAS
       - name: GLPI
+      - name: brvJCCostRevenueOverride
   - name: kpa
     database: shookdw
     schema: kpa

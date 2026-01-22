@@ -76,3 +76,7 @@ models:
         +materialized: view
         +database: intermediate
         +schema: schedule
+      sales:
+        +materialized: view
+        +database: intermediate
+        +schema: sales
