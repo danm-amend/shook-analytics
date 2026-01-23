@@ -68,9 +68,14 @@ with new_sales as (
     from intermediate.finances.actual_cost as a 
     CROSS JOIN 
     gl_actuals_refresh AS b
-    where date(mth) = to_char(current_date, 'YYYY-MM-01') 
+    where date(actual_date) <= date(convert_timezone('America/Los_Angeles', 'America/New_York', current_timestamp())) 
+    -- to_char(current_date, 'YYYY-MM-01') 
 ), gl_budget_max_fc as (
-    select max(fc_number) as max_fc_number from {{ ref('gl_budget') }} where budget_year = year(current_timestamp())
+    select
+    budget_name
+    from {{ ref('gl_budget') }} 
+    where budget_type = 'FC'
+    qualify row_number() over (order by mth_year desc, fc_number desc) = 1
 ), gl_budget_refresh as (
     select 
         last_altered
@@ -88,10 +93,10 @@ with new_sales as (
     from 
         {{ ref('gl_budget') }} as a 
     join gl_budget_max_fc as b
-    on a.fc_number = b.max_fc_number
+    on a.budget_name = b.budget_name
     cross join 
     gl_budget_refresh as c 
-    where budget_year = year(current_timestamp()) and budget_type = 'FC'
+    where budget_type = 'FC'
 )
 , metric_union as (
     select * from new_sales
