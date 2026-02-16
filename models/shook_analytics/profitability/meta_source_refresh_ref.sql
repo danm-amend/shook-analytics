@@ -97,8 +97,26 @@ with new_sales as (
     cross join 
     gl_budget_refresh as c 
     where budget_type = 'FC'
-)
-, metric_union as (
+), unanet as (
+    select 
+        'Unanet' as data_source,
+        data_date_ref,
+        first_load_dt,
+        last_load_dt
+    from
+    (
+        select
+            min(last_load_dt) as first_load_dt,
+            max(last_load_dt) as last_load_dt
+        from {{ source('metadata', 'unanet_refresh_log') }}
+    ) as a 
+    cross join 
+    (
+        select max(to_timestamp(last_modified_date_time)) as data_date_ref
+            from
+        {{ ref('int_opportunities') }} 
+    ) as b
+), metric_union as (
     select * from new_sales
     union all
     select * from wip 
@@ -112,6 +130,8 @@ with new_sales as (
     select * from gl_actuals
     union all 
     select * from gl_budget
+    union all 
+    select * from unanet
     union all 
     select 'power_bi_refresh' as data_source
     , convert_timezone('America/Los_Angeles', 'America/New_York', current_timestamp()) as data_date_ref
