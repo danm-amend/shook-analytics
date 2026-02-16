@@ -48,6 +48,7 @@ sources:
       - name: wip_file_control
       - name: pending_backlog_file_control
       - name: kpa_refresh_log
+      - name: unanet_refresh_log
   - name: P6
     database: shookdw
     schema: P6
