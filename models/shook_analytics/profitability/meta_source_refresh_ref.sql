@@ -140,7 +140,10 @@ with new_sales as (
 ), metric_union_clean as (
     select 
         data_source,
-        data_date_ref,
+        case
+            when data_source in ('GL Budget', 'New Sales', 'WIP', 'Rolling Forecast', 'Pending Backlog') then last_day(data_date_ref)
+            else data_date_ref
+        end as data_date_ref,
         last_load_dt
     from metric_union
 )
