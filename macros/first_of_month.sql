@@ -5,6 +5,6 @@
             DATE_TRUNC('MONTH', TO_DATE({{ column }}, 'MON-YY'))
         -- Otherwise assume ISO format YYYY-MM-DD
         ELSE
-            DATE_TRUNC('MONTH', TO_DATE({{ column }}, 'YYYY-MM-DD'))
+            DATE_TRUNC('MONTH', TO_DATE(replace({{ column }}, ' 00:00:00', ''), 'YYYY-MM-DD'))
     END
 {% endmacro %}
